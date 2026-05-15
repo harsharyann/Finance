@@ -76,8 +76,7 @@ export function AddBillModal({ children }: { children?: React.ReactNode }) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("Not authenticated")
 
-      const { error } = await supabase
-        .from('bills')
+      const { error } = await (supabase.from('bills') as any)
         .insert({
           user_id: user.id,
           name: values.name,

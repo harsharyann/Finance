@@ -31,8 +31,7 @@ export default function BillsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const { data, error } = await supabase
-        .from('bills')
+      const { data, error } = await (supabase.from('bills') as any)
         .select('*')
         .eq('user_id', user.id)
         .order('due_date', { ascending: true })
@@ -49,7 +48,7 @@ export default function BillsPage() {
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this bill?")) return
     try {
-      const { error } = await supabase.from('bills').delete().eq('id', id)
+      const { error } = await (supabase.from('bills') as any).delete().eq('id', id)
       if (error) throw error
       toast.success("Bill deleted")
       setBills(bills.filter(b => b.id !== id))
@@ -61,8 +60,7 @@ export default function BillsPage() {
   async function handleMarkAsPaid(bill: any) {
     try {
       // 1. Update bill status
-      const { error: billError } = await supabase
-        .from('bills')
+      const { error: billError } = await (supabase.from('bills') as any)
         .update({ status: 'paid' })
         .eq('id', bill.id)
 
