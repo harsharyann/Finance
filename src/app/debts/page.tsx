@@ -8,7 +8,6 @@ import {
   ArrowUpRight, 
   ArrowDownLeft, 
   Search, 
-  MoreVertical, 
   CheckCircle2, 
   Clock,
   Wallet,
@@ -22,9 +21,9 @@ import { format } from "date-fns"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
-import { AddDebtModal } from "@/components/karza/AddDebtModal"
+import { AddDebtModal } from "@/components/debts/AddDebtModal"
 
-function KarzaContent() {
+function DebtContent() {
   const [debts, setDebts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -77,14 +76,14 @@ function KarzaContent() {
             <span className="w-8 h-px bg-primary/30" />
             Mera Khata
           </div>
-          <h1 className="text-4xl font-black text-foreground tracking-tight">Karza / Udhaar</h1>
+          <h1 className="text-4xl font-black text-foreground tracking-tight">Debts & Credits</h1>
           <p className="text-muted-foreground font-medium">Manage who owes you and who you owe.</p>
         </div>
         
         <AddDebtModal onDebtAdded={handleRefresh}>
           <Button className="rounded-2xl h-14 px-8 font-black text-base shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all">
             <Plus className="w-5 h-5 mr-2" />
-            Naya Udhaar
+            Naya Record
           </Button>
         </AddDebtModal>
       </div>
@@ -216,11 +215,11 @@ function KarzaContent() {
   )
 }
 
-export default function KarzaPage() {
+export default function DebtsPage() {
   return (
     <AppLayout>
       <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
-        <KarzaContent />
+        <DebtContent />
       </Suspense>
     </AppLayout>
   )

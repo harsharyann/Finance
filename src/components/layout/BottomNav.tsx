@@ -11,7 +11,7 @@ const leftNav = [
   { name: "Txns", href: "/transactions", icon: Wallet },
 ]
 const rightNav = [
-  { name: "Karza", href: "/karza", icon: Users },
+  { name: "Debts", href: "/debts", icon: Users },
   { name: "Reports", href: "/reports", icon: BarChart3 },
 ]
 
