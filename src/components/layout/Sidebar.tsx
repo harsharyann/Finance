@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
 import { signOut } from "@/app/auth/actions"
 import { useTheme } from "@/context/ThemeContext"
+import { Button } from "@/components/ui/button"
 
 const navItems = [
   {
