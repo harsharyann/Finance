@@ -1,122 +1,146 @@
 "use client"
 
-import { useState } from "react"
-import { Wallet, ArrowRight, Globe, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/utils/supabase/client"
-import { login } from "@/app/auth/actions"
+import { Eye, EyeOff, ArrowRight } from "lucide-react"
+
+const schema = z.object({
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+})
 
 export default function LoginPage() {
+  const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
   const supabase = createClient()
 
-  const handleGoogleLogin = async () => {
-    setGoogleLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      })
-      if (error) throw error
-    } catch (err) {
-      console.error(err)
-      setGoogleLoading(false)
+  const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+  })
+
+  async function onSubmit(values: z.infer<typeof schema>) {
+    setLoading(true)
+    setError("")
+    const { error } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    })
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    } else {
+      router.push("/dashboard")
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background premium-grid p-4">
-      <div className="w-full max-w-md space-y-8">
-        {/* Branding */}
-        <div className="flex flex-col items-center text-center space-y-2">
-          <img src="/logo.png" className="w-16 h-16 object-contain mb-2" alt="Logo" />
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Finance</h1>
-            <p className="text-sm text-muted-foreground uppercase tracking-[0.2em] font-medium">
-              Powered by Sociusin
-            </p>
+    <div className="min-h-screen flex">
+
+      {/* === LEFT BRAND PANEL === */}
+      <div className="hidden lg:flex lg:w-1/2 bg-primary flex-col items-center justify-center p-16 relative overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full -ml-32 -mb-32" />
+
+        <div className="relative text-center text-white">
+          <img src="/logo.png" className="w-20 h-20 object-contain mx-auto mb-8 drop-shadow-xl" alt="Finance Logo" />
+          <h1 className="text-4xl font-heading font-black mb-4 leading-tight">Track Every Rupee.<br />Grow Every Day.</h1>
+          <p className="text-white/70 text-lg leading-relaxed max-w-sm mx-auto">
+            Finance Powered by Sociusin helps you manage your business finances with clarity and confidence.
+          </p>
+
+          <div className="mt-12 space-y-4">
+            {[
+              "Profit & Loss at a glance",
+              "Daily, Weekly, Monthly insights",
+              "Custom categories & descriptions",
+              "Monthly PDF reports",
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-3 text-white/80 text-sm">
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+                {item}
+              </div>
+            ))}
           </div>
         </div>
+      </div>
 
-        <Card className="premium-card border-none bg-card p-2">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-            <CardDescription>
-              Enter your credentials to access your dashboard
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form action={login} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  name="email"
-                  type="email" 
-                  placeholder="name@example.com" 
-                  className="rounded-xl h-12 border-border focus:ring-primary/20 bg-transparent"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="#" className="text-xs text-primary font-bold hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
-                <Input 
-                  id="password" 
-                  name="password"
-                  type="password" 
-                  className="rounded-xl h-12 border-border focus:ring-primary/20 bg-transparent"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full h-12 rounded-xl font-bold text-base mt-2 gap-2">
-                Sign In
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </form>
+      {/* === RIGHT FORM PANEL === */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-background">
+        <div className="w-full max-w-sm">
 
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border"></span>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground font-medium">Or continue with</span>
-              </div>
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-2 mb-10">
+            <img src="/logo.png" className="w-9 h-9 object-contain" alt="Logo" />
+            <span className="font-heading font-black text-xl text-foreground">Finance</span>
+          </div>
+
+          <h2 className="text-3xl font-heading font-black text-foreground mb-2">Welcome back</h2>
+          <p className="text-muted-foreground mb-8">Sign in to your account to continue</p>
+
+          {error && (
+            <div className="mb-6 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-sm text-destructive font-medium">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-1.5">Email address</label>
+              <input
+                {...register("email")}
+                type="email"
+                placeholder="you@example.com"
+                className="w-full h-12 px-4 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+              />
+              {errors.email && <p className="mt-1.5 text-xs text-destructive">{errors.email.message}</p>}
             </div>
 
-            <Button 
-              variant="outline" 
-              className="w-full rounded-xl h-12 gap-2 border-border bg-transparent hover:bg-secondary"
-              onClick={handleGoogleLogin}
-              disabled={googleLoading}
-            >
-              {googleLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Globe className="w-4 h-4" />
-              )}
-              Continue with Google
-            </Button>
-          </CardContent>
-        </Card>
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-1.5">Password</label>
+              <div className="relative">
+                <input
+                  {...register("password")}
+                  type={showPass ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="w-full h-12 px-4 pr-12 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="mt-1.5 text-xs text-destructive">{errors.password.message}</p>}
+            </div>
 
-        <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link href="#" className="text-primary font-bold hover:underline">
-            Get started for free
-          </Link>
-        </p>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+            >
+              {loading ? (
+                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>Sign in <ArrowRight className="w-4 h-4" /></>
+              )}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            Don't have an account?{" "}
+            <Link href="/register" className="text-primary font-semibold hover:underline underline-offset-2">
+              Create one free
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )

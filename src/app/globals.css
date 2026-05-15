@@ -22,51 +22,56 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
 }
 
+/* ===== OPTION 3: CLEAN MINIMAL — Neo-Bank ===== */
 :root {
-  /* Warm Pastel Theme */
-  --background: #FFF8F4;
-  --foreground: #2D2A26;
+  --background: #F9F8F6;
+  --foreground: #111827;
   
-  --card: #FFF1EB;
-  --card-foreground: #2D2A26;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
   
-  --popover: #FFF1EB;
-  --popover-foreground: #2D2A26;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
   
-  --primary: #FF8A4C;
+  --primary: #E8642A;
   --primary-foreground: #FFFFFF;
   
-  --secondary: #FFD6E0;
-  --secondary-foreground: #2D2A26;
+  --secondary: #FFF0E8;
+  --secondary-foreground: #E8642A;
   
-  --muted: #FFF1EB;
-  --muted-foreground: #7B6F68;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
   
-  --accent: #E89CA8;
-  --accent-foreground: #FFFFFF;
+  --accent: #FFF0E8;
+  --accent-foreground: #E8642A;
   
-  --destructive: #E89CA8;
+  --destructive: #E11D48;
   --destructive-foreground: #FFFFFF;
   
-  --border: #F3E5DE;
-  --input: #F3E5DE;
-  --ring: #FF8A4C;
-  
-  --radius: 0.85rem;
+  --success: #059669;
+  --success-foreground: #FFFFFF;
 
-  --chart-1: #FF8A4C;
-  --chart-2: #8ED9B6;
-  --chart-3: #FFD6E0;
-  --chart-4: #E89CA8;
-  --chart-5: #7B6F68;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #E8642A;
+  
+  --radius: 0.75rem;
+
+  --chart-1: #E8642A;
+  --chart-2: #059669;
+  --chart-3: #6366F1;
+  --chart-4: #E11D48;
+  --chart-5: #6B7280;
 }
 
 @layer base {
@@ -74,86 +79,112 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground selection:bg-primary/10 selection:text-primary font-sans antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "tnum" 1;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading tracking-tight font-bold text-foreground;
+    font-family: var(--font-heading);
+    @apply font-bold tracking-tight text-foreground;
   }
 }
 
-/* Custom Utilities for Premium Look */
-@layer utilities {
-  .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20;
-  }
+/* ===== DARK MODE ===== */
+.dark {
+  --background: #0D0D0D;
+  --foreground: #F9FAFB;
   
-  .soft-shadow {
-    @apply shadow-[0_8px_30px_rgb(255,138,76,0.08)];
+  --card: #161616;
+  --card-foreground: #F9FAFB;
+  
+  --popover: #1F1F1F;
+  --popover-foreground: #F9FAFB;
+  
+  --primary: #E8642A;
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: #1F1F1F;
+  --secondary-foreground: #F9FAFB;
+  
+  --muted: #1F1F1F;
+  --muted-foreground: #9CA3AF;
+  
+  --accent: #2A1A0E;
+  --accent-foreground: #E8642A;
+  
+  --destructive: #E11D48;
+  --destructive-foreground: #FFFFFF;
+  
+  --border: #262626;
+  --input: #262626;
+  --ring: #E8642A;
+
+  --chart-1: #E8642A;
+  --chart-2: #10B981;
+  --chart-3: #818CF8;
+  --chart-4: #F43F5E;
+  --chart-5: #9CA3AF;
+}
+
+/* ===== UTILITIES ===== */
+@layer utilities {
+
+  /* Clean card — white with subtle border */
+  .clean-card {
+    @apply bg-card border border-border rounded-2xl shadow-sm transition-shadow duration-200 hover:shadow-md;
   }
 
-  .premium-card {
-    @apply bg-card rounded-2xl shadow-[0_4px_20px_rgb(45,42,38,0.03)] border border-[#F3E5DE] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(255,138,76,0.08)] hover:border-primary/30;
-    @apply dark:border-white/5 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)];
-  }
-
+  /* Premium grid dot background */
   .premium-grid {
-    background-image: radial-gradient(circle at 2px 2px, #F3E5DE 1px, transparent 0);
-    background-size: 40px 40px;
+    background-image: radial-gradient(circle at 1.5px 1.5px, #E5E7EB 1.5px, transparent 0);
+    background-size: 28px 28px;
   }
 
+  .dark .premium-grid {
+    background-image: radial-gradient(circle at 1.5px 1.5px, #262626 1.5px, transparent 0);
+    background-size: 28px 28px;
+  }
+
+  /* Keep old class working */
+  .premium-card {
+    @apply bg-card border border-border rounded-2xl shadow-sm transition-shadow duration-200 hover:shadow-md;
+  }
+
+  /* Glass utility */
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/30;
+  }
+
+  .dark .glass {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10;
+  }
+
+  /* === ANIMATIONS === */
   .animate-in-fade {
-    animation: fadeIn 0.4s ease-out forwards;
+    animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .animate-in-slide {
-    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.10s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.20s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
-}
 
-.dark {
-  /* For dark mode, we'll use a deep version of the palette to maintain vibe */
-  --background: #121110;
-  --foreground: #FFF8F4;
-  
-  --card: #1C1A18;
-  --card-foreground: #FFF8F4;
-  
-  --popover: #1C1A18;
-  --popover-foreground: #FFF8F4;
-  
-  --primary: #FF8A4C;
-  --primary-foreground: #121110;
-  
-  --secondary: #2D2A26;
-  --secondary-foreground: #FFF8F4;
-  
-  --muted: #1C1A18;
-  --muted-foreground: #A1958D;
-  
-  --accent: #FFD6E0;
-  --accent-foreground: #121110;
-  
-  --destructive: #E89CA8;
-  --destructive-foreground: #FFF8F4;
-  
-  --border: #2D2A26;
-  --input: #2D2A26;
-  --ring: #FF8A4C;
-
-  --chart-1: #FF8A4C;
-  --chart-2: #8ED9B6;
-  --chart-3: #FFD6E0;
-  --chart-4: #E89CA8;
-  --chart-5: #7B6F68;
+  /* Tab slide indicator */
+  @keyframes tabSlide {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
 }
