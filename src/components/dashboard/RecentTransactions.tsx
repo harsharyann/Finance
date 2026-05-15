@@ -60,7 +60,7 @@ export function RecentTransactions() {
   }
 
   return (
-    <Card className="premium-card border-none bg-white">
+    <Card className="premium-card border-none bg-card">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-bold">
           {view === 'daily' ? "Today's Activity" : "Recent Activity"}

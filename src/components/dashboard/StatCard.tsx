@@ -21,10 +21,10 @@ export function StatCard({ title, amount, trend, trendType = 'neutral', icon: Ic
           </div>
           {trend && (
             <span className={cn(
-              "text-xs font-semibold px-2 py-1 rounded-full",
-              trendType === 'up' ? "bg-emerald-100 text-emerald-600" : 
-              trendType === 'down' ? "bg-rose-100 text-rose-600" : 
-              "bg-slate-100 text-slate-600"
+              "text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider",
+              trendType === 'up' ? "bg-emerald-500/10 text-emerald-500" : 
+              trendType === 'down' ? "bg-rose-500/10 text-rose-500" : 
+              "bg-slate-500/10 text-slate-500"
             )}>
               {trend}
             </span>

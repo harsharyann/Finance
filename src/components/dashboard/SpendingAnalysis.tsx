@@ -99,7 +99,7 @@ export function SpendingAnalysis() {
   }
 
   return (
-    <Card className="premium-card border-none bg-white">
+    <Card className="premium-card border-none bg-card h-full">
       <CardHeader>
         <CardTitle className="text-lg font-bold">Spending Analysis ({view})</CardTitle>
       </CardHeader>

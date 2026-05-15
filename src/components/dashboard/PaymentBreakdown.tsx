@@ -62,7 +62,7 @@ export function PaymentBreakdown() {
   }
 
   return (
-    <Card className="premium-card border-none bg-white">
+    <Card className="premium-card border-none bg-card h-full">
       <CardHeader>
         <CardTitle className="text-lg font-bold">Payment Methods ({view})</CardTitle>
       </CardHeader>

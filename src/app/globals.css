@@ -93,11 +93,52 @@
   }
 
   .premium-card {
-    @apply bg-card rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200/60 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-primary/20;
+    @apply bg-card rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200/60 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.1)] hover:border-primary/40;
+    @apply dark:border-white/5 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)];
   }
 
   .premium-grid {
     background-image: radial-gradient(circle at 2px 2px, var(--border) 1px, transparent 0);
-    background-size: 24px 24px;
+    background-size: 40px 40px;
   }
+
+  .glass-dark {
+    @apply bg-slate-900/40 backdrop-blur-xl border border-white/5;
+  }
+}
+
+.dark {
+  --background: oklch(0.12 0.02 260); /* Deep Midnight */
+  --foreground: oklch(0.98 0.01 260);
+  
+  --card: oklch(0.16 0.02 260);
+  --card-foreground: oklch(0.98 0.01 260);
+  
+  --popover: oklch(0.16 0.02 260);
+  --popover-foreground: oklch(0.98 0.01 260);
+  
+  --primary: oklch(0.75 0.18 45); /* Golden Glow */
+  --primary-foreground: oklch(0.12 0.02 260);
+  
+  --secondary: oklch(0.2 0.03 260);
+  --secondary-foreground: oklch(0.98 0.01 260);
+  
+  --muted: oklch(0.2 0.03 260);
+  --muted-foreground: oklch(0.65 0.02 260);
+  
+  --accent: oklch(0.3 0.05 260);
+  --accent-foreground: oklch(0.98 0.01 260);
+  
+  --destructive: oklch(0.55 0.18 25);
+  --destructive-foreground: oklch(0.98 0.01 260);
+  
+  --border: oklch(0.25 0.03 260);
+  --input: oklch(0.25 0.03 260);
+  --ring: oklch(0.75 0.18 45);
+
+  --chart-1: oklch(0.75 0.18 45);
+  --chart-2: oklch(0.7 0.15 200);
+  --chart-3: oklch(0.65 0.2 300);
+  --chart-4: oklch(0.8 0.1 100);
+  --chart-5: oklch(0.75 0.15 30);
 }
