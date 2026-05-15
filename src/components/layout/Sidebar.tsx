@@ -48,10 +48,10 @@ function NavLinks() {
     async function getRole() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        const { data } = await (supabase.from('profiles') as any)
+        const { data } = (await (supabase.from('profiles') as any)
           .select('role')
           .eq('id', user.id)
-          .single()
+          .single()) as any
         if (data) setRole(data.role)
       }
     }
@@ -149,11 +149,10 @@ export function Sidebar() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         setUserEmail(user.email || null)
-        const { data: profile } = await supabase
-          .from("profiles")
+        const { data: profile } = (await (supabase.from("profiles") as any)
           .select("name")
           .eq("id", user.id)
-          .single()
+          .single()) as any
         if (profile) setUserName(profile.name)
       }
     }

@@ -41,10 +41,10 @@ export default function AdminPage() {
       return
     }
 
-    const { data: profile } = await (supabase.from('profiles') as any)
+    const { data: profile } = (await (supabase.from('profiles') as any)
       .select('role')
       .eq('id', user.id)
-      .single()
+      .single()) as any
 
     if (profile?.role !== 'admin') {
       router.push('/dashboard')
@@ -59,11 +59,11 @@ export default function AdminPage() {
     setLoading(true)
     try {
       // Fetch Users
-      const { data: userData, error: userError } = await (supabase.from('profiles') as any).select('*')
+      const { data: userData, error: userError } = (await (supabase.from('profiles') as any).select('*')) as any
       if (userError) throw userError
 
       // Fetch Global Stats (using a trick or separate queries)
-      const { count: txCount } = await (supabase.from('transactions') as any).select('*', { count: 'exact', head: true })
+      const { count: txCount } = (await (supabase.from('transactions') as any).select('*', { count: 'exact', head: true })) as any
 
       setUsers(userData || [])
       setStats({
