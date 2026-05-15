@@ -69,13 +69,14 @@ export function DashboardStats() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in-fade">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-primary uppercase tracking-widest">
+        <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] font-heading">
           {titleMap[view] || titleMap.daily}
         </h3>
-        <div className="text-xs font-bold px-3 py-1 bg-primary/10 text-primary rounded-full uppercase">
-          Live Data
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Live Insights</span>
         </div>
       </div>
 
@@ -88,25 +89,26 @@ export function DashboardStats() {
           icon={Wallet}
         />
         <StatCard 
-          title="Income" 
+          title="Total Income" 
           amount={`₹${stats.income.toLocaleString('en-IN')}`} 
           trend={`Inflow ${view}`} 
           trendType="up"
           icon={ArrowUpRight}
         />
         <StatCard 
-          title="Expenses" 
+          title="Total Expenses" 
           amount={`₹${stats.expenses.toLocaleString('en-IN')}`} 
           trend={`Outflow ${view}`} 
           trendType="down"
           icon={ArrowDownLeft}
         />
         <StatCard 
-          title="Net Profit" 
+          title="Net Profit/Loss" 
           amount={`₹${stats.profit.toLocaleString('en-IN')}`} 
-          trend="Current health" 
+          trend="Business Health" 
           trendType={stats.profit >= 0 ? "up" : "down"}
           icon={TrendingUp}
+          className={stats.profit >= 0 ? "bg-emerald-50/50" : "bg-rose-50/50"}
         />
       </div>
     </div>

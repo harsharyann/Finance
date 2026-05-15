@@ -50,12 +50,14 @@ const categories = [
   "Salary",
   "Rent",
   "Personal",
-  "Miscellaneous"
+  "Miscellaneous",
+  "Other"
 ]
 
 export function AddTransactionModal({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [customCategory, setCustomCategory] = useState("")
   const router = useRouter()
   const supabase = createClient()
 
@@ -71,6 +73,8 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
     },
   })
 
+  const selectedCategory = form.watch("category")
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true)
     try {
@@ -81,12 +85,20 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
         return
       }
 
+      const finalCategory = values.category === "Other" ? customCategory : values.category
+
+      if (!finalCategory) {
+        toast.error("Please specify a category")
+        setLoading(false)
+        return
+      }
+
       const { error } = await (supabase.from('transactions') as any)
         .insert({
           user_id: user.id,
           amount: parseFloat(values.amount),
           type: values.type,
-          category: values.category,
+          category: finalCategory,
           payment_method: values.payment_method,
           note: values.note,
           date: values.date,
@@ -97,6 +109,7 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
       toast.success("Transaction added successfully!")
       setOpen(false)
       form.reset()
+      setCustomCategory("")
       router.refresh()
     } catch (error: any) {
       toast.error(error.message || "Failed to add transaction")
@@ -109,28 +122,28 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button className="rounded-xl gap-2">
+          <Button className="rounded-xl gap-2 font-bold shadow-md hover:shadow-lg transition-all">
             <Plus className="w-4 h-4" />
             Add Transaction
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] rounded-2xl">
+      <DialogContent className="sm:max-w-[425px] rounded-2xl bg-card border-none shadow-2xl animate-in-slide">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Add Transaction</DialogTitle>
+          <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">Add Transaction</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Type</FormLabel>
+                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="rounded-xl h-11">
+                        <SelectTrigger className="rounded-xl h-12 bg-background border-border">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
@@ -148,9 +161,9 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Amount (₹)</FormLabel>
+                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Amount (₹)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="0.00" className="rounded-xl h-11" {...field} />
+                      <Input type="number" placeholder="0.00" className="rounded-xl h-12 bg-background border-border" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -163,10 +176,10 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="rounded-xl h-11">
+                      <SelectTrigger className="rounded-xl h-12 bg-background border-border">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                     </FormControl>
@@ -181,15 +194,27 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
               )}
             />
 
+            {selectedCategory === "Other" && (
+              <div className="animate-in-fade">
+                <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Custom Category Name</FormLabel>
+                <Input 
+                  placeholder="Enter category name" 
+                  className="rounded-xl h-12 bg-background border-border"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                />
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date</FormLabel>
                     <FormControl>
-                      <Input type="date" className="rounded-xl h-11" {...field} />
+                      <Input type="date" className="rounded-xl h-12 bg-background border-border" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -200,10 +225,10 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
                 name="payment_method"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Payment Method</FormLabel>
+                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Payment Method</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="rounded-xl h-11">
+                        <SelectTrigger className="rounded-xl h-12 bg-background border-border">
                           <SelectValue placeholder="Select method" />
                         </SelectTrigger>
                       </FormControl>
@@ -225,16 +250,16 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
               name="note"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="What was this for?" className="rounded-xl h-11" {...field} />
+                    <Input placeholder="What was this for?" className="rounded-xl h-12 bg-background border-border" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="w-full h-12 rounded-xl font-bold mt-2" disabled={loading}>
+            <Button type="submit" className="w-full h-12 rounded-xl font-bold mt-2 shadow-lg shadow-primary/20" disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Save Transaction"}
             </Button>
           </form>

@@ -74,11 +74,11 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground selection:bg-primary/10 selection:text-primary font-sans;
+    @apply bg-background text-foreground selection:bg-primary/10 selection:text-primary font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading tracking-tight;
+    @apply font-heading tracking-tight font-bold text-foreground;
   }
 }
 
@@ -93,7 +93,7 @@
   }
 
   .premium-card {
-    @apply bg-card rounded-2xl shadow-[0_8px_30px_rgb(255,138,76,0.04)] border border-[#F3E5DE] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(255,138,76,0.12)] hover:border-primary/40;
+    @apply bg-card rounded-2xl shadow-[0_4px_20px_rgb(45,42,38,0.03)] border border-[#F3E5DE] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(255,138,76,0.08)] hover:border-primary/30;
     @apply dark:border-white/5 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)];
   }
 
@@ -101,36 +101,54 @@
     background-image: radial-gradient(circle at 2px 2px, #F3E5DE 1px, transparent 0);
     background-size: 40px 40px;
   }
+
+  .animate-in-fade {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  .animate-in-slide {
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }
 
 .dark {
   /* For dark mode, we'll use a deep version of the palette to maintain vibe */
-  --background: #1A1816;
+  --background: #121110;
   --foreground: #FFF8F4;
   
-  --card: #2D2A26;
+  --card: #1C1A18;
   --card-foreground: #FFF8F4;
   
-  --popover: #2D2A26;
+  --popover: #1C1A18;
   --popover-foreground: #FFF8F4;
   
   --primary: #FF8A4C;
-  --primary-foreground: #1A1816;
+  --primary-foreground: #121110;
   
-  --secondary: #7B6F68;
+  --secondary: #2D2A26;
   --secondary-foreground: #FFF8F4;
   
-  --muted: #2D2A26;
-  --muted-foreground: #7B6F68;
+  --muted: #1C1A18;
+  --muted-foreground: #A1958D;
   
   --accent: #FFD6E0;
-  --accent-foreground: #1A1816;
+  --accent-foreground: #121110;
   
   --destructive: #E89CA8;
   --destructive-foreground: #FFF8F4;
   
-  --border: #3D3935;
-  --input: #3D3935;
+  --border: #2D2A26;
+  --input: #2D2A26;
   --ring: #FF8A4C;
 
   --chart-1: #FF8A4C;
