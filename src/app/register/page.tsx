@@ -170,7 +170,7 @@ export default function RegisterPage() {
       </div>
 
       {/* === RIGHT BRAND PANEL === */}
-      <div className="hidden lg:flex lg:w-1/2 bg-foreground flex-col items-center justify-center p-16 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-slate-950 flex-col items-center justify-center p-16 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full -ml-48 -mt-48" />
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary/20 rounded-full -mr-32 -mb-32" />
 
