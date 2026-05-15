@@ -41,7 +41,8 @@ export function SpendingAnalysis() {
       const { data: transactions, error } = await query
       
       if (error) throw error
-      if (!transactions || transactions.length === 0) {
+      const txns = (transactions || []) as any[]
+      if (txns.length === 0) {
         setTopCategories([])
         setHealth({ status: "N/A", message: "No data for this period" })
         setLoading(false)
@@ -50,11 +51,11 @@ export function SpendingAnalysis() {
 
       // Process Categories
       const catMap: any = {}
-      const totalExpense = transactions
+      const totalExpense = txns
         .filter(t => t.type === 'expense')
         .reduce((acc, t) => acc + t.amount, 0)
 
-      transactions
+      txns
         .filter(t => t.type === 'expense')
         .forEach(t => {
           catMap[t.category] = (catMap[t.category] || 0) + t.amount

@@ -46,7 +46,8 @@ export function PaymentBreakdown() {
       ]
 
       const processed = methods.map(m => {
-        const total = data
+        const txns = (data || []) as any[]
+        const total = txns
           ?.filter(t => t.payment_method === m.name)
           .reduce((acc, curr) => acc + curr.amount, 0) || 0
         return { ...m, total }

@@ -44,11 +44,12 @@ export function DashboardStats() {
     const { data, error } = await query
 
     if (data) {
-      const income = data
+      const txns = data as any[]
+      const income = txns
         .filter(t => t.type === 'income')
         .reduce((acc, curr) => acc + curr.amount, 0)
       
-      const expenses = data
+      const expenses = txns
         .filter(t => t.type === 'expense')
         .reduce((acc, curr) => acc + curr.amount, 0)
 

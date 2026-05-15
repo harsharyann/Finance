@@ -50,7 +50,8 @@ export function RecentTransactions() {
       const { data, error } = await query
       
       if (error) throw error
-      setTransactions(data || [])
+      const txns = (data || []) as any[]
+      setTransactions(txns)
     } catch (error) {
       console.error(error)
     } finally {
