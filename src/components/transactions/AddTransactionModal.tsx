@@ -100,7 +100,7 @@ export function AddTransactionModal({
         return
       }
 
-      const { error } = await supabase.from('transactions')
+      const { error } = await (supabase.from('transactions') as any)
         .insert({
           user_id: user.id,
           amount: parseFloat(values.amount),
