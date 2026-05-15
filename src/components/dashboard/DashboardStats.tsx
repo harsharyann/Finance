@@ -56,7 +56,7 @@ export function DashboardStats() {
 
       if (view === "daily") {
         query = query.eq("date", todayStr)
-      } else {
+      } else if (view !== "all") {
         query = query.gte("date", fromDate)
       }
 

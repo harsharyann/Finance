@@ -14,9 +14,10 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 const periodTabs = [
-  { label: "Today",     view: "daily" },
-  { label: "This Week", view: "weekly" },
+  { label: "Today",      view: "daily" },
+  { label: "This Week",  view: "weekly" },
   { label: "This Month", view: "monthly" },
+  { label: "All Time",   view: "all" },
 ]
 
 function DashboardContent() {

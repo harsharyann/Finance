@@ -7,15 +7,24 @@ import {
   Trash2,
   Loader2,
   Search,
-  SlidersHorizontal,
   TrendingUp,
   TrendingDown,
+  AlertCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
 import { format } from "date-fns"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 const categoryColors: Record<string, string> = {
   "Shop Stock":    "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300",
@@ -26,6 +35,7 @@ const categoryColors: Record<string, string> = {
   "Rent":          "bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300",
   "Personal":      "bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300",
   "Miscellaneous": "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+  "Other":         "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
 }
 
 function getCategoryColor(cat: string) {
@@ -37,11 +47,17 @@ export function TransactionTable() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all")
+  
+  // Delete confirmation state
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const supabase = createClient()
   const router = useRouter()
 
   useEffect(() => {
     fetchTransactions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function fetchTransactions() {
@@ -65,15 +81,20 @@ export function TransactionTable() {
     }
   }
 
-  async function deleteTransaction(id: string) {
+  async function handleConfirmDelete() {
+    if (!deleteId) return
+    setIsDeleting(true)
     try {
-      const { error } = await (supabase.from("transactions") as any).delete().eq("id", id)
+      const { error } = await (supabase.from("transactions") as any).delete().eq("id", deleteId)
       if (error) throw error
       toast.success("Transaction deleted")
-      setTransactions((prev) => prev.filter((t) => t.id !== id))
+      setTransactions((prev) => prev.filter((t) => t.id !== deleteId))
       router.refresh()
     } catch {
       toast.error("Failed to delete")
+    } finally {
+      setIsDeleting(false)
+      setDeleteId(null)
     }
   }
 
@@ -90,15 +111,14 @@ export function TransactionTable() {
   }, [transactions, search, filterType])
 
   // Summary stats
-  const totalIncome = filtered.filter(t => t.type === "income").reduce((a, c) => a + c.amount, 0)
-  const totalExpense = filtered.filter(t => t.type === "expense").reduce((a, c) => a + c.amount, 0)
+  const totalIncome = filtered.filter(t => t.type === "income").reduce((a, c) => a + Number(c.amount), 0)
+  const totalExpense = filtered.filter(t => t.type === "expense").reduce((a, c) => a + Number(c.amount), 0)
 
   return (
     <div className="space-y-5">
 
       {/* === SEARCH + FILTER BAR === */}
       <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search */}
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input
@@ -110,7 +130,6 @@ export function TransactionTable() {
           />
         </div>
 
-        {/* Type filter pills */}
         <div className="flex items-center gap-1.5 bg-muted rounded-xl p-1">
           {(["all", "income", "expense"] as const).map((type) => (
             <button
@@ -175,7 +194,7 @@ export function TransactionTable() {
       ) : (
         <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
           {/* Table Header */}
-          <div className="grid grid-cols-[1fr_120px_100px_100px_110px_44px] gap-0 px-4 py-3 bg-muted/50 border-b border-border">
+          <div className="hidden sm:grid grid-cols-[1fr_120px_100px_100px_110px_44px] gap-0 px-4 py-3 bg-muted/50 border-b border-border">
             {["Transaction", "Category", "Date", "Method", "Amount", ""].map((h, i) => (
               <p key={i} className={cn(
                 "text-[11px] font-black uppercase tracking-wider text-muted-foreground",
@@ -189,7 +208,7 @@ export function TransactionTable() {
             {filtered.map((t, idx) => (
               <div
                 key={t.id}
-                className="grid grid-cols-[1fr_120px_100px_100px_110px_44px] gap-0 px-4 py-3.5 items-center hover:bg-muted/30 transition-colors duration-100 animate-in-fade"
+                className="grid grid-cols-[1fr_110px_44px] sm:grid-cols-[1fr_120px_100px_100px_110px_44px] gap-0 px-4 py-3.5 items-center hover:bg-muted/30 transition-colors duration-100 animate-in-fade"
                 style={{ animationDelay: `${idx * 20}ms` }}
               >
                 {/* Transaction name + icon */}
@@ -209,14 +228,16 @@ export function TransactionTable() {
                     <p className="text-sm font-semibold text-foreground truncate leading-none">
                       {t.note || t.category}
                     </p>
-                    {t.note && (
-                      <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{t.category}</p>
-                    )}
+                    <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-2">
+                      <span className="sm:hidden">{format(new Date(t.date), "dd MMM")}</span>
+                      <span className="sm:hidden">•</span>
+                      <span>{t.category}</span>
+                    </p>
                   </div>
                 </div>
 
-                {/* Category chip */}
-                <div>
+                {/* Category chip (Hidden on mobile) */}
+                <div className="hidden sm:block">
                   <span className={cn(
                     "inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold",
                     getCategoryColor(t.category)
@@ -225,13 +246,13 @@ export function TransactionTable() {
                   </span>
                 </div>
 
-                {/* Date */}
-                <p className="text-sm text-muted-foreground font-medium">
+                {/* Date (Hidden on mobile) */}
+                <p className="hidden sm:block text-sm text-muted-foreground font-medium">
                   {format(new Date(t.date), "dd MMM")}
                 </p>
 
-                {/* Method */}
-                <p className="text-sm text-muted-foreground font-medium truncate">
+                {/* Method (Hidden on mobile) */}
+                <p className="hidden sm:block text-sm text-muted-foreground font-medium truncate">
                   {t.payment_method || "—"}
                 </p>
 
@@ -246,13 +267,13 @@ export function TransactionTable() {
                 </p>
 
                 {/* Delete */}
-                <div className="flex justify-center">
+                <div className="flex justify-center ml-2">
                   <button
-                    onClick={() => deleteTransaction(t.id)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-rose-50 dark:hover:bg-rose-950 hover:text-rose-500 transition-colors"
+                    onClick={() => setDeleteId(t.id)}
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-rose-50 dark:hover:bg-rose-950 hover:text-rose-500 transition-colors"
                     title="Delete"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -267,6 +288,39 @@ export function TransactionTable() {
           </div>
         </div>
       )}
+
+      {/* === DELETE CONFIRMATION DIALOG === */}
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent className="rounded-2xl">
+          <DialogHeader>
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950 flex items-center justify-center text-rose-600 dark:text-rose-400 mb-2">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <DialogTitle>Delete Transaction?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete the transaction record from your account.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-start gap-2 pt-2">
+            <Button
+              variant="destructive"
+              className="rounded-xl font-bold flex-1 sm:flex-none"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Yes, Delete"}
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-xl font-bold flex-1 sm:flex-none"
+              onClick={() => setDeleteId(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
