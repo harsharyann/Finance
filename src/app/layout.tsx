@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "Finance — Powered by Sociusin",
   description: "Track Every Rupee Smartly. Finance Powered by Sociusin helps you manage income, expenses, and business cash flow effortlessly.",
   keywords: ["finance", "tracking", "expense manager", "business finance", "sociusin"],
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  }
 };
 
 import { ThemeProvider } from "@/context/ThemeContext";
