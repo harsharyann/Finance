@@ -36,31 +36,38 @@ export default function ReportsPage() {
   async function fetchReportData() {
     setLoading(true)
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
       const { data: transactions, error } = await supabase
         .from('transactions')
         .select('*')
+        .eq('user_id', user.id) // SECURITY: Added missing user_id filter
       
       if (error) throw error
       if (!transactions) return
 
+      const txns = transactions as any[]
+
       // Calculate Savings (Total Income - Total Expense)
-      const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0)
-      const expense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0)
+      const income = txns.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0)
+      const expense = txns.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0)
       const savings = income - expense
 
       // Avg Daily Expense (Last 30 days)
-      const last30Days = transactions.filter(t => new Date(t.date) > subMonths(new Date(), 1) && t.type === 'expense')
+      const thirtyDaysAgo = subMonths(new Date(), 1)
+      const last30Days = txns.filter(t => new Date(t.date) > thirtyDaysAgo && t.type === 'expense')
       const avgDaily = last30Days.reduce((acc, t) => acc + t.amount, 0) / 30
 
       // Breakdown by Category
       const catMap: any = {}
-      transactions.filter(t => t.type === 'expense').forEach(t => {
+      txns.filter(t => t.type === 'expense').forEach(t => {
         catMap[t.category] = (catMap[t.category] || 0) + t.amount
       })
       const breakdown = Object.entries(catMap).map(([name, amount]: any) => ({
         name,
         amount,
-        percent: (amount / expense) * 100,
+        percent: expense > 0 ? (amount / expense) * 100 : 0,
         color: name === 'Shop Stock' ? 'bg-primary' : name === 'Food' ? 'bg-rose-500' : 'bg-amber-500'
       })).sort((a, b) => b.amount - a.amount)
 
@@ -69,7 +76,7 @@ export default function ReportsPage() {
         const date = subMonths(new Date(), i)
         const start = startOfMonth(date)
         const end = endOfMonth(date)
-        const monthTxns = transactions.filter(t => {
+        const monthTxns = txns.filter(t => {
           const d = new Date(t.date)
           return d >= start && d <= end
         })
