@@ -47,7 +47,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <Card className="premium-card border-none bg-white p-2">
+        <Card className="premium-card border-none bg-card p-2">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
             <CardDescription>
@@ -63,7 +63,7 @@ export default function LoginPage() {
                   name="email"
                   type="email" 
                   placeholder="name@example.com" 
-                  className="rounded-xl h-12 border-slate-200 focus:ring-primary/20"
+                  className="rounded-xl h-12 border-border focus:ring-primary/20 bg-transparent"
                   required
                 />
               </div>
@@ -78,7 +78,7 @@ export default function LoginPage() {
                   id="password" 
                   name="password"
                   type="password" 
-                  className="rounded-xl h-12 border-slate-200 focus:ring-primary/20"
+                  className="rounded-xl h-12 border-border focus:ring-primary/20 bg-transparent"
                   required
                 />
               </div>
@@ -90,16 +90,16 @@ export default function LoginPage() {
 
             <div className="relative py-4">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200"></span>
+                <span className="w-full border-t border-border"></span>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground font-medium">Or continue with</span>
+                <span className="bg-card px-2 text-muted-foreground font-medium">Or continue with</span>
               </div>
             </div>
 
             <Button 
               variant="outline" 
-              className="w-full rounded-xl h-12 gap-2 border-slate-200"
+              className="w-full rounded-xl h-12 gap-2 border-border bg-transparent hover:bg-secondary"
               onClick={handleGoogleLogin}
               disabled={googleLoading}
             >

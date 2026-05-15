@@ -12,11 +12,11 @@ export default function RegisterPage({
   searchParams: { message: string }
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-      <Card className="w-full max-w-md premium-card border-none">
+    <div className="flex min-h-screen items-center justify-center bg-background premium-grid p-4">
+      <Card className="w-full max-w-md premium-card border-none bg-card">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
               <Wallet className="w-7 h-7 text-white" />
             </div>
           </div>
@@ -34,7 +34,7 @@ export default function RegisterPage({
                 name="full_name"
                 placeholder="John Doe"
                 required
-                className="rounded-xl h-12"
+                className="rounded-xl h-12 border-border bg-transparent"
               />
             </div>
             <div className="space-y-2">
@@ -45,7 +45,7 @@ export default function RegisterPage({
                 type="email"
                 placeholder="name@example.com"
                 required
-                className="rounded-xl h-12"
+                className="rounded-xl h-12 border-border bg-transparent"
               />
             </div>
             <div className="space-y-2">
@@ -55,7 +55,7 @@ export default function RegisterPage({
                 name="password"
                 type="password"
                 required
-                className="rounded-xl h-12"
+                className="rounded-xl h-12 border-border bg-transparent"
               />
             </div>
             {searchParams?.message && (
@@ -63,7 +63,7 @@ export default function RegisterPage({
                 {searchParams.message}
               </p>
             )}
-            <Button formAction={signup} className="w-full h-12 rounded-xl font-bold text-base">
+            <Button formAction={signup} className="w-full h-12 rounded-xl font-bold text-base mt-4">
               Get Started
             </Button>
           </form>
