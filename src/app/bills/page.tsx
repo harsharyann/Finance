@@ -239,11 +239,13 @@ export default function BillsPage() {
                         )}
                         
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9">
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
+                          <DropdownMenuTrigger
+                            render={
+                              <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            }
+                          />
                           <DropdownMenuContent align="end" className="rounded-xl">
                             <DropdownMenuItem 
                               className="text-rose-500 focus:text-rose-500 focus:bg-rose-50 cursor-pointer"

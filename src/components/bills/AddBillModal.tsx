@@ -101,14 +101,16 @@ export function AddBillModal({ children }: { children?: React.ReactNode }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children || (
-          <Button className="rounded-xl gap-2 font-bold shadow-md hover:shadow-lg transition-all">
-            <Plus className="w-4 h-4" />
-            Add Bill
-          </Button>
-        )}
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          children || (
+            <Button className="rounded-xl gap-2 font-bold shadow-md hover:shadow-lg transition-all">
+              <Plus className="w-4 h-4" />
+              Add Bill
+            </Button>
+          )
+        }
+      />
       <DialogContent className="sm:max-w-[425px] rounded-2xl bg-card border-none shadow-2xl animate-in-slide">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">Add New Bill</DialogTitle>
