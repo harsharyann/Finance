@@ -37,6 +37,7 @@ export function OverviewChart() {
       .order('date', { ascending: true })
 
     if (transactions) {
+      const txns = transactions as any[]
       // Create a map of dates for the last 30 days
       const dateRange = eachDayOfInterval({
         start: thirtyDaysAgo,
@@ -45,7 +46,7 @@ export function OverviewChart() {
 
       const chartData = dateRange.map(date => {
         const dateStr = format(date, 'yyyy-MM-dd')
-        const dayTransactions = transactions.filter(t => t.date === dateStr)
+        const dayTransactions = txns.filter(t => t.date === dateStr)
         
         return {
           name: format(date, 'MMM dd'),
