@@ -27,6 +27,7 @@ function DebtContent() {
   const [debts, setDebts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [filter, setFilter] = useState<"all" | "to_receive" | "to_pay">("all")
   const [refreshKey, setRefreshKey] = useState(0)
   const supabase = createClient()
 
@@ -71,9 +72,9 @@ function DebtContent() {
   }
 
   const handleSettle = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'settled' ? 'pending' : 'settled'
+    const newStatus = (currentStatus === 'settled' ? 'pending' : 'settled') as 'pending' | 'settled'
     try {
-      const { error } = await supabase.from('debts').update({ status: newStatus as any }).eq('id', id)
+      const { error } = await supabase.from('debts').update({ status: newStatus }).eq('id', id)
       if (error) throw error
       toast.success(`Record marked as ${newStatus}`)
       handleRefresh()
@@ -87,10 +88,20 @@ function DebtContent() {
     payable: debts.filter(d => d.type === 'to_pay' && d.status === 'pending').reduce((acc, d) => acc + Number(d.amount), 0)
   }
 
-  const filteredDebts = debts.filter(d => 
-    d.person_name.toLowerCase().includes(search.toLowerCase()) ||
-    (d.note || "").toLowerCase().includes(search.toLowerCase())
-  )
+  const filteredDebts = debts
+    .filter(d => {
+      const matchesSearch = d.person_name.toLowerCase().includes(search.toLowerCase()) ||
+                          (d.note || "").toLowerCase().includes(search.toLowerCase())
+      const matchesFilter = filter === "all" || d.type === filter
+      return matchesSearch && matchesFilter
+    })
+    .sort((a, b) => {
+      // Pending first
+      if (a.status === 'pending' && b.status === 'settled') return -1
+      if (a.status === 'settled' && b.status === 'pending') return 1
+      // Then by date descending
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
 
   return (
     <div className="space-y-8 animate-in-fade pb-20">
@@ -103,7 +114,7 @@ function DebtContent() {
             Mera Khata
           </div>
           <h1 className="text-4xl font-black text-foreground tracking-tight">Debts & Credits</h1>
-          <p className="text-muted-foreground font-medium">Manage who owes you and who you owe.</p>
+          <p className="text-muted-foreground font-medium text-sm">Manage who owes you and who you owe.</p>
         </div>
         
         <AddDebtModal onDebtAdded={handleRefresh}>
@@ -163,20 +174,42 @@ function DebtContent() {
       </div>
 
       {/* SEARCH & FILTERS */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card/40 backdrop-blur-xl p-4 rounded-[2rem] border shadow-sm">
-         <div className="relative w-full md:w-[28rem]">
+      <div className="flex flex-col xl:flex-row gap-6 items-center justify-between bg-card/40 backdrop-blur-xl p-4 rounded-[2.5rem] border shadow-sm border-border/50">
+         <div className="relative w-full xl:w-[28rem]">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
             <input 
               type="text" 
-              placeholder="Search by person name or note..." 
+              placeholder="Search person or note..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full h-14 pl-14 pr-6 rounded-2xl border-none bg-muted/50 text-base font-medium focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/40"
             />
          </div>
-         <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-4">
+
+         <div className="flex flex-wrap items-center justify-center gap-2 bg-muted/30 p-1.5 rounded-[1.5rem]">
+            {[
+              { label: "All Records", value: "all" },
+              { label: "Lena (To Receive)", value: "to_receive" },
+              { label: "Dena (To Pay)", value: "to_pay" },
+            ].map((t) => (
+              <button
+                key={t.value}
+                onClick={() => setFilter(t.value as any)}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                  filter === t.value 
+                    ? "bg-background text-primary shadow-lg shadow-black/5 border border-border"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
+         </div>
+
+         <div className="hidden xl:flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 px-4">
             <Users className="w-4 h-4" />
-            {filteredDebts.length} Records found
+            {filteredDebts.length} total entries
          </div>
       </div>
 

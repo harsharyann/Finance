@@ -74,7 +74,7 @@ export function AddDebtModal({ children, onDebtAdded, debt }: AddDebtModalProps)
       if (!user) return
 
       if (isEditing) {
-        const { error } = await (supabase.from('debts') as any)
+        const { error } = await supabase.from('debts')
           .update({
             ...values,
             amount: Number(values.amount)
@@ -84,7 +84,7 @@ export function AddDebtModal({ children, onDebtAdded, debt }: AddDebtModalProps)
         if (error) throw error
         toast.success("Record updated successfully")
       } else {
-        const { error } = await (supabase.from('debts') as any)
+        const { error } = await supabase.from('debts')
           .insert({
             ...values,
             user_id: user.id,

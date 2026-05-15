@@ -101,6 +101,7 @@ export interface Database {
           status?: 'upcoming' | 'paid' | 'due'
           created_at?: string
         }
+      }
       debts: {
         Row: {
           id: string
