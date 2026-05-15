@@ -13,6 +13,7 @@ import {
   Sun,
   LogOut,
   TrendingUp,
+  Users
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
@@ -33,6 +34,7 @@ const navItems = [
     section: "Finance",
     items: [
       { name: "Transactions", href: "/transactions", icon: Wallet, description: "All records" },
+      { name: "Karza", href: "/karza", icon: Users, description: "Udhaar/Lena" },
       { name: "Reports", href: "/reports", icon: BarChart3, description: "P&L analysis" },
       { name: "Bills", href: "/bills", icon: CalendarDays, description: "Reminders" },
     ],
