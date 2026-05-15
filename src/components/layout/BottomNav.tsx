@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Wallet, BarChart3, Plus, Users } from "lucide-react"
+import { LayoutDashboard, Wallet, BarChart3, Plus, Users, CalendarDays } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal"
 
@@ -12,7 +12,7 @@ const leftNav = [
 ]
 const rightNav = [
   { name: "Debts", href: "/debts", icon: Users },
-  { name: "Reports", href: "/reports", icon: BarChart3 },
+  { name: "Bills", href: "/bills", icon: CalendarDays },
 ]
 
 export function BottomNav() {

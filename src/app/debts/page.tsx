@@ -12,7 +12,8 @@ import {
   Clock,
   Wallet,
   Loader2,
-  Trash2
+  Trash2,
+  FileText
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"

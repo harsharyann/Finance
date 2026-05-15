@@ -273,9 +273,9 @@ export default function BillsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6 pr-2">
-                      <div className="text-right hidden sm:block">
-                        <p className="text-2xl font-black text-foreground tabular-nums">₹{Number(bill.amount).toLocaleString('en-IN')}</p>
+                    <div className="flex items-center gap-4 sm:gap-6 pr-2">
+                      <div className="text-right">
+                        <p className="text-lg sm:text-2xl font-black text-foreground tabular-nums">₹{Number(bill.amount).toLocaleString('en-IN')}</p>
                         <p className={cn(
                           "text-[10px] font-black uppercase tracking-[0.2em] mt-0.5",
                           bill.status === 'paid' ? 'text-emerald-500' : isOverdue ? 'text-rose-500' : 'text-primary'
