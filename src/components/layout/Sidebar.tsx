@@ -39,6 +39,8 @@ const navItems = [
 ]
 
 function NavLinks() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [role, setRole] = useState<string | null>(null)
   const supabase = createClient()
 
@@ -73,50 +75,40 @@ function NavLinks() {
     <div className="flex-1 overflow-y-auto px-3 py-2 space-y-6">
       {navItems.map((group) => (
         <div key={group.section}>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/60 px-3 mb-2">
+          <h3 className="px-3 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-3">
             {group.section}
-          </p>
-          <div className="space-y-0.5">
-            {group.items.map((item) => {
-              const active = isActive(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150",
-                    active
-                      ? "bg-primary text-white shadow-sm shadow-primary/30"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <div className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors",
-                    active
-                      ? "bg-white/20"
-                      : "bg-muted group-hover:bg-background"
+          </h3>
+          <div className="space-y-1">
+            {group.items.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group",
+                  isActive(item.href)
+                    ? "bg-primary text-white shadow-lg shadow-primary/25"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <item.icon className={cn(
+                  "w-5 h-5 transition-transform duration-300 group-hover:scale-110",
+                  isActive(item.href) ? "text-white" : "text-muted-foreground/70 group-hover:text-primary"
+                )} />
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold leading-none">{item.name}</span>
+                  <span className={cn(
+                    "text-[10px] font-medium mt-1 transition-colors",
+                    isActive(item.href) ? "text-white/70" : "text-muted-foreground/50 group-hover:text-primary/70"
                   )}>
-                    <item.icon className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className={cn(
-                      "text-sm font-semibold leading-none",
-                      active ? "text-white" : "text-foreground"
-                    )}>
-                      {item.name}
-                    </p>
-                    <p className={cn(
-                      "text-[11px] mt-0.5 leading-none",
-                      active ? "text-white/70" : "text-muted-foreground"
-                    )}>
-                      {item.description}
-                    </p>
-                  </div>
-                </Link>
-              )
-            })}
+                    {item.description}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
+      ))}
+
       {/* GHOST ADMIN SECTION */}
       {role === 'admin' && (
         <div className="pt-2">
@@ -149,98 +141,82 @@ function NavLinks() {
 
 export function Sidebar() {
   const { theme, toggleTheme } = useTheme()
-  const [user, setUser] = useState<any>(null)
+  const [userName, setUserName] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
     async function getUser() {
-      const { data } = await supabase.auth.getUser()
-      if (data?.user) setUser(data.user)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserEmail(user.email || null)
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("name")
+          .eq("id", user.id)
+          .single()
+        if (profile) setUserName(profile.name)
+      }
     }
     getUser()
   }, [])
 
-  const initials = user?.user_metadata?.full_name
-    ? user.user_metadata.full_name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
-    : user?.email?.[0]?.toUpperCase() || "U"
-
   return (
-    <aside className="hidden md:flex flex-col w-64 h-screen sticky top-0 bg-card border-r border-border">
-
-      {/* === LOGO === */}
-      <div className="px-5 pt-6 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-border overflow-hidden">
-            <img src="/logo.png" className="w-7 h-7 object-contain" alt="Logo" />
+    <div className="flex flex-col h-full bg-card border-r border-border/60">
+      {/* LOGO */}
+      <div className="p-6">
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-500">
+            <TrendingUp className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-heading font-black text-base text-foreground leading-none">Finance</h1>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] mt-0.5 leading-none">Powered by Sociusin</p>
+            <h2 className="text-xl font-black text-foreground tracking-tight leading-none">Finance</h2>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Powered by Sociusin</p>
           </div>
-        </div>
+        </Link>
       </div>
 
-      {/* === DIVIDER === */}
-      <div className="mx-4 mb-3 h-px bg-border" />
-
-      {/* === NAV === */}
-      <Suspense fallback={
-        <div className="flex-1 px-3 space-y-2 pt-2">
-          {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-12 rounded-xl bg-muted animate-pulse" />
-          ))}
-        </div>
-      }>
+      <Suspense fallback={<div className="flex-1" />}>
         <NavLinks />
       </Suspense>
 
-      {/* === DIVIDER === */}
-      <div className="mx-4 mt-2 h-px bg-border" />
-
-      {/* === BOTTOM SECTION === */}
-      <div className="px-3 py-4 space-y-1">
-
-        {/* Theme toggle */}
-        <button
+      {/* FOOTER ACTIONS */}
+      <div className="p-4 space-y-2">
+        <Button
+          variant="ghost"
+          className="w-full justify-start rounded-xl h-11 text-muted-foreground hover:text-foreground"
           onClick={toggleTheme}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-150 group"
         >
-          <div className="w-8 h-8 rounded-lg bg-muted group-hover:bg-background flex items-center justify-center flex-shrink-0 transition-colors">
-            {theme === "light"
-              ? <Moon className="w-4 h-4" />
-              : <Sun className="w-4 h-4" />
-            }
-          </div>
-          <span className="text-sm font-semibold">
-            {theme === "light" ? "Dark Mode" : "Light Mode"}
-          </span>
-        </button>
+          {theme === "dark" ? (
+            <>
+              <Sun className="w-5 h-5 mr-3 text-amber-500" />
+              <span className="text-sm font-bold">Light Mode</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-5 h-5 mr-3 text-primary" />
+              <span className="text-sm font-bold">Dark Mode</span>
+            </>
+          )}
+        </Button>
 
-        {/* User card */}
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-muted/60 border border-border mt-2">
-          {/* Avatar */}
-          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-xs font-black uppercase flex-shrink-0 border border-primary/20">
-            {initials}
+        <div className="pt-4 mt-4 border-t border-border/40">
+          <div className="flex items-center gap-3 px-3 py-2">
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground font-black text-xs uppercase">
+              {userName?.[0] || userEmail?.[0] || "U"}
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-black text-foreground truncate">{userName || "User"}</p>
+              <p className="text-[10px] font-bold text-muted-foreground truncate">{userEmail}</p>
+            </div>
+            <form action={signOut}>
+              <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 transition-all">
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </form>
           </div>
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-foreground truncate leading-none">
-              {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Loading..."}
-            </p>
-            <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-              {user?.email || ""}
-            </p>
-          </div>
-          {/* Logout */}
-          <button
-            onClick={() => signOut()}
-            title="Sign out"
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors flex-shrink-0"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
-    </aside>
+    </div>
   )
 }
