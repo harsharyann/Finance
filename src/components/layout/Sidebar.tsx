@@ -48,8 +48,7 @@ function NavLinks() {
     async function getRole() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        const { data } = await supabase
-          .from('profiles')
+        const { data } = await (supabase.from('profiles') as any)
           .select('role')
           .eq('id', user.id)
           .single()
