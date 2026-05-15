@@ -84,7 +84,7 @@ function SelectContent({
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
           className={cn(
-            "relative isolate z-[200] max-h-64 w-(--anchor-width) min-w-[10rem] overflow-y-auto rounded-xl bg-white dark:bg-neutral-900 text-foreground shadow-xl ring-1 ring-black/10 dark:ring-white/10 p-1 origin-(--transform-origin) data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            "relative isolate z-[200] max-h-64 w-(--anchor-width) min-w-[10rem] overflow-y-auto rounded-xl bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 shadow-xl ring-1 ring-black/10 dark:ring-white/10 p-1 origin-(--transform-origin) data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
             className
           )}
           {...props}
@@ -120,7 +120,8 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground outline-none select-none transition-colors",
+        "relative flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm outline-none select-none transition-colors",
+        "text-slate-900 dark:text-slate-100", // Explicit colors
         "hover:bg-primary/10 hover:text-primary",
         "focus:bg-primary/10 focus:text-primary",
         "data-disabled:pointer-events-none data-disabled:opacity-40",

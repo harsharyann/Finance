@@ -36,8 +36,10 @@ export default function LandingPage() {
       {/* === NAVBAR === */}
       <header className="fixed top-0 w-full z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-border">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo.png" className="w-8 h-8 object-contain" alt="Finance Logo" />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border overflow-hidden">
+              <img src="/logo.png" className="w-6 h-6 object-contain" alt="Finance Logo" />
+            </div>
             <div>
               <span className="font-heading font-bold text-lg text-foreground leading-none">Finance</span>
               <p className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] leading-none mt-0.5">Sociusin</p>
@@ -134,7 +136,9 @@ export default function LandingPage() {
       <footer className="py-8 border-t border-border mt-auto">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" className="w-6 h-6 object-contain" alt="Logo" />
+            <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shadow-sm border border-border overflow-hidden">
+              <img src="/logo.png" className="w-5 h-5 object-contain" alt="Logo" />
+            </div>
             <span className="font-heading font-bold text-foreground">Finance</span>
           </div>
           <p className="text-sm text-muted-foreground">© 2026 Finance — Powered by Sociusin</p>

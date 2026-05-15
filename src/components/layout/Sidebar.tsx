@@ -129,8 +129,8 @@ export function Sidebar() {
       {/* === LOGO === */}
       <div className="px-5 pt-6 pb-5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center flex-shrink-0 shadow-md shadow-primary/30">
-            <img src="/logo.png" className="w-6 h-6 object-contain" alt="Logo" />
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-border overflow-hidden">
+            <img src="/logo.png" className="w-7 h-7 object-contain" alt="Logo" />
           </div>
           <div>
             <h1 className="font-heading font-black text-base text-foreground leading-none">Finance</h1>

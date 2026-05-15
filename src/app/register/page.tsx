@@ -66,8 +66,10 @@ export default function RegisterPage() {
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-10">
-            <img src="/logo.png" className="w-9 h-9 object-contain" alt="Logo" />
+          <div className="lg:hidden flex items-center gap-3 mb-10">
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border overflow-hidden">
+              <img src="/logo.png" className="w-7 h-7 object-contain" alt="Logo" />
+            </div>
             <span className="font-heading font-black text-xl text-foreground">Finance</span>
           </div>
 
@@ -173,7 +175,9 @@ export default function RegisterPage() {
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary/20 rounded-full -mr-32 -mb-32" />
 
         <div className="relative text-center">
-          <img src="/logo.png" className="w-20 h-20 object-contain mx-auto mb-8 drop-shadow-xl" alt="Logo" />
+          <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl border border-white/20 overflow-hidden">
+            <img src="/logo.png" className="w-16 h-16 object-contain" alt="Logo" />
+          </div>
           <h2 className="text-4xl font-heading font-black text-white mb-4">Your business finances, simplified.</h2>
           <p className="text-white/60 text-lg leading-relaxed max-w-sm mx-auto">
             Join thousands of shopkeepers and business owners who trust Finance to track every rupee.
