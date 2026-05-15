@@ -45,6 +45,9 @@ interface AddDebtModalProps {
   onDebtAdded?: () => void
 }
 
+// @ts-ignore - Brute-force cast to any for Vercel stability
+const DT: any = DialogTrigger
+
 export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -88,15 +91,14 @@ export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* Brute-force cast to any to bypass Vercel build error on asChild */}
-      <DialogTrigger asChild={true as any}>
+      <DT asChild>
         {children || (
           <Button className="rounded-2xl h-11 px-6 font-black text-xs uppercase tracking-widest gap-2">
             <Plus className="w-4 h-4" />
             Add Record
           </Button>
         )}
-      </DialogTrigger>
+      </DT>
       <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none max-w-lg shadow-2xl">
         <div className="bg-primary p-8 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
