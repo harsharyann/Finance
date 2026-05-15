@@ -33,6 +33,7 @@ const navItems = [
     items: [
       { name: "Transactions", href: "/transactions", icon: Wallet, description: "All records" },
       { name: "Reports", href: "/reports", icon: BarChart3, description: "P&L analysis" },
+      { name: "Bills", href: "/bills", icon: CalendarDays, description: "Reminders" },
     ],
   },
 ]
