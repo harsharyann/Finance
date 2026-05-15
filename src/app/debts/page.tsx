@@ -43,8 +43,7 @@ function DebtContent() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const { data, error } = await supabase
-        .from('debts')
+      const { data, error } = await (supabase.from('debts') as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -62,7 +61,7 @@ function DebtContent() {
     if (!confirm("Are you sure you want to delete this record?")) return
     
     try {
-      const { error } = await supabase.from('debts').delete().eq('id', id)
+      const { error } = await (supabase.from('debts') as any).delete().eq('id', id)
       if (error) throw error
       toast.success("Record deleted successfully")
       handleRefresh()
@@ -72,9 +71,9 @@ function DebtContent() {
   }
 
   const handleSettle = async (id: string, currentStatus: string) => {
-    const newStatus = (currentStatus === 'settled' ? 'pending' : 'settled') as 'pending' | 'settled'
+    const newStatus = currentStatus === 'settled' ? 'pending' : 'settled'
     try {
-      const { error } = await supabase.from('debts').update({ status: newStatus }).eq('id', id)
+      const { error } = await (supabase.from('debts') as any).update({ status: newStatus }).eq('id', id)
       if (error) throw error
       toast.success(`Record marked as ${newStatus}`)
       handleRefresh()
