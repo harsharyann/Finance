@@ -25,7 +25,7 @@ export function PaymentBreakdown() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      let query = supabase.from('transactions').select('amount, payment_method, type, date').eq('user_id', user.id) // SECURITY
+      let query = (supabase.from('transactions') as any).select('amount, payment_method, type, date').eq('user_id', user.id) // SECURITY
 
       const now = new Date()
       if (view === 'daily') {

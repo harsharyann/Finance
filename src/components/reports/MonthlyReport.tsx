@@ -36,8 +36,7 @@ export function MonthlyReport() {
       const firstDay = startOfMonth(currentDate)
       const lastDay = endOfMonth(currentDate)
 
-      const { data: txns, error } = await supabase
-        .from("transactions")
+      const { data: txns, error } = await (supabase.from("transactions") as any)
         .select("*")
         .eq("user_id", user.id)
         .gte("date", format(firstDay, "yyyy-MM-dd"))
