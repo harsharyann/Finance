@@ -55,7 +55,13 @@ const categories = [
   "Other"
 ]
 
-export function AddTransactionModal({ children }: { children?: React.ReactNode }) {
+export function AddTransactionModal({ 
+  children, 
+  onTransactionAdded 
+}: { 
+  children?: React.ReactNode, 
+  onTransactionAdded?: () => void 
+}) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [customCategory, setCustomCategory] = useState("")
@@ -111,6 +117,7 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
       setOpen(false)
       form.reset()
       setCustomCategory("")
+      onTransactionAdded?.()
       router.refresh()
     } catch (error: any) {
       toast.error(error.message || "Failed to add transaction")
