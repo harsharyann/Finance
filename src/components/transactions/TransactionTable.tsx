@@ -10,6 +10,8 @@ import {
   TrendingUp,
   TrendingDown,
   AlertCircle,
+  MoreVertical,
+  CalendarDays
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
@@ -25,17 +27,23 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const categoryColors: Record<string, string> = {
-  "Shop Stock":    "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300",
-  "Food":          "bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300",
-  "Transport":     "bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300",
-  "Electricity":   "bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300",
-  "Salary":        "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300",
-  "Rent":          "bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300",
-  "Personal":      "bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300",
-  "Miscellaneous": "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
-  "Other":         "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
+  "Shop Stock":    "bg-blue-500/10 text-blue-600",
+  "Food":          "bg-orange-500/10 text-orange-600",
+  "Transport":     "bg-purple-500/10 text-purple-600",
+  "Electricity":   "bg-yellow-500/10 text-yellow-600",
+  "Salary":        "bg-emerald-500/10 text-emerald-600",
+  "Rent":          "bg-rose-500/10 text-rose-600",
+  "Personal":      "bg-pink-500/10 text-pink-600",
+  "Miscellaneous": "bg-gray-500/10 text-gray-600",
+  "Other":         "bg-slate-500/10 text-slate-600",
 }
 
 function getCategoryColor(cat: string) {
@@ -96,30 +104,30 @@ export function TransactionTable({
   const totalExpense = filtered.filter(t => t.type === "expense").reduce((a, c) => a + Number(c.amount), 0)
 
   return (
-    <div className="space-y-5 p-4 sm:p-6">
+    <div className="space-y-6 p-3 sm:p-8">
 
       {/* SEARCH + FILTER BAR */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col lg:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search transactions..."
-            className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Search by anything..."
+            className="w-full h-12 pl-11 pr-4 rounded-[1.25rem] border-none bg-muted/50 text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 bg-muted/50 rounded-xl p-1">
+        <div className="flex items-center gap-1.5 bg-muted/50 rounded-[1.25rem] p-1.5 overflow-x-auto no-scrollbar">
           {(["all", "income", "expense"] as const).map((type) => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
               className={cn(
-                "px-4 py-1.5 rounded-lg text-sm font-bold transition-all capitalize",
+                "px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
                 filterType === type
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-primary shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -130,99 +138,161 @@ export function TransactionTable({
       </div>
 
       {/* MINI SUMMARY ROW */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
-          <TrendingUp className="w-4 h-4 text-emerald-600" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex items-center gap-4 p-5 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+             <TrendingUp className="w-6 h-6" />
+          </div>
           <div>
-            <p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest leading-none">Inflow</p>
-            <p className="text-sm font-black text-emerald-600 tabular-nums mt-1">₹{totalIncome.toLocaleString("en-IN")}</p>
+            <p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-[0.2em] leading-none">Total Income</p>
+            <p className="text-2xl font-black text-emerald-600 tabular-nums mt-1.5">₹{totalIncome.toLocaleString("en-IN")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-rose-500/5 border border-rose-500/10">
-          <TrendingDown className="w-4 h-4 text-rose-600" />
+        <div className="flex items-center gap-4 p-5 rounded-[2rem] bg-rose-500/5 border border-rose-500/10">
+          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-600">
+             <TrendingDown className="w-6 h-6" />
+          </div>
           <div>
-            <p className="text-[10px] font-black text-rose-600/60 uppercase tracking-widest leading-none">Outflow</p>
-            <p className="text-sm font-black text-rose-600 tabular-nums mt-1">₹{totalExpense.toLocaleString("en-IN")}</p>
+            <p className="text-[10px] font-black text-rose-600/60 uppercase tracking-[0.2em] leading-none">Total Expense</p>
+            <p className="text-2xl font-black text-rose-600 tabular-nums mt-1.5">₹{totalExpense.toLocaleString("en-IN")}</p>
           </div>
         </div>
       </div>
 
-      {/* TABLE / LIST */}
-      {loading ? (
-        <div className="flex justify-center items-center h-52">
-          <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-52 text-center gap-2">
-          <AlertCircle className="w-8 h-8 text-muted-foreground/30" />
-          <p className="text-sm font-bold text-muted-foreground">No transactions found</p>
-        </div>
-      ) : (
-        <div className="space-y-1">
-          {filtered.map((t) => (
-            <div
-              key={t.id}
-              className="group flex items-center justify-between p-3.5 hover:bg-muted/30 rounded-2xl transition-all border border-transparent hover:border-border"
-            >
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center",
-                  t.type === "income" ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
-                )}>
-                  {t.type === "income" ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                </div>
-                <div>
-                  <p className="text-sm font-black text-foreground">{t.note || t.category}</p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{t.category}</span>
-                    <span className="w-1 h-1 rounded-full bg-border" />
-                    <span className="text-[10px] font-bold text-muted-foreground">{format(new Date(t.date), "dd MMM yyyy")}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <p className={cn(
-                    "text-sm font-black tabular-nums",
-                    t.type === "income" ? "text-emerald-600" : "text-rose-600"
-                  )}>
-                    {t.type === "income" ? "+" : "-"}₹{t.amount.toLocaleString("en-IN")}
-                  </p>
-                  <p className="text-[10px] font-bold text-muted-foreground mt-0.5">{t.payment_method}</p>
-                </div>
-                <button
-                  onClick={() => setDeleteId(t.id)}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+      {/* LIST SECTION */}
+      <div className="space-y-3">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="w-10 h-10 animate-spin text-primary/20" />
+            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/50">Fetching Records...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-muted/20 rounded-[2.5rem] border-2 border-dashed border-border/60">
+            <AlertCircle className="w-12 h-12 text-muted-foreground/20" />
+            <div className="space-y-1">
+              <p className="text-lg font-black text-foreground">No records found</p>
+              <p className="text-sm text-muted-foreground font-medium">Try adjusting your filters or search.</p>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+             <div className="flex items-center gap-3 px-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">All Activity</span>
+                <div className="h-px flex-1 bg-border/50" />
+                <span className="text-[10px] font-black text-muted-foreground/40">{filtered.length} total</span>
+             </div>
+
+             <div className="space-y-2.5">
+                {filtered.map((t) => (
+                  <div
+                    key={t.id}
+                    className="group relative bg-card border hover:border-primary/30 rounded-[2rem] p-1.5 pr-4 transition-all hover:shadow-2xl hover:shadow-primary/5 flex items-center gap-4"
+                  >
+                    {/* Icon Container */}
+                    <div className={cn(
+                      "w-14 h-14 rounded-[1.5rem] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105",
+                      t.type === "income" ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
+                    )}>
+                      {t.type === "income" ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
+                    </div>
+
+                    {/* Main Info */}
+                    <div className="flex-1 min-w-0 py-2">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-base font-black text-foreground truncate tracking-tight">{t.note || t.category}</p>
+                          <div className="flex flex-wrap items-center gap-y-1 gap-x-3 mt-1">
+                             <span className={cn(
+                               "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full",
+                               getCategoryColor(t.category)
+                             )}>
+                               {t.category}
+                             </span>
+                             <div className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground/70">
+                                <CalendarDays className="w-3.5 h-3.5" />
+                                {format(new Date(t.date), "dd MMM, yyyy")}
+                             </div>
+                          </div>
+                        </div>
+
+                        {/* Amount - Responsive size */}
+                        <div className="text-right shrink-0">
+                           <p className={cn(
+                             "text-lg sm:text-xl font-black tabular-nums leading-none",
+                             t.type === "income" ? "text-emerald-600" : "text-rose-600"
+                           )}>
+                             {t.type === "income" ? "+" : "-"}₹{t.amount.toLocaleString("en-IN")}
+                           </p>
+                           <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1.5">{t.payment_method}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop Actions */}
+                    <div className="hidden sm:flex items-center gap-1 ml-2">
+                       <button
+                         onClick={() => setDeleteId(t.id)}
+                         className="w-10 h-10 rounded-xl flex items-center justify-center text-muted-foreground/40 hover:bg-rose-500/10 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100"
+                       >
+                         <Trash2 className="w-4.5 h-4.5" />
+                       </button>
+                    </div>
+
+                    {/* Mobile Actions (Dropdown) */}
+                    <div className="sm:hidden">
+                       <DropdownMenu>
+                         <DropdownMenuTrigger
+                           render={
+                             <button className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40">
+                               <MoreVertical className="w-5 h-5" />
+                             </button>
+                           }
+                         />
+                         <DropdownMenuContent align="end" className="rounded-2xl p-2 min-w-[140px]">
+                           <DropdownMenuItem 
+                             className="text-rose-500 focus:text-rose-500 focus:bg-rose-50 rounded-xl font-bold p-3"
+                             onClick={() => setDeleteId(t.id)}
+                           >
+                             <Trash2 className="w-4 h-4 mr-2" />
+                             Delete
+                           </DropdownMenuItem>
+                         </DropdownMenuContent>
+                       </DropdownMenu>
+                    </div>
+                  </div>
+                ))}
+             </div>
+          </div>
+        )}
+      </div>
 
       {/* DELETE DIALOG */}
       <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <DialogContent className="rounded-[2rem]">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black">Delete Transaction?</DialogTitle>
-            <DialogDescription className="font-medium">
-              This will permanently remove this record. This action cannot be undone.
-            </DialogDescription>
+        <DialogContent className="rounded-[2.5rem] p-8 max-w-[400px]">
+          <DialogHeader className="items-center text-center space-y-4">
+            <div className="w-20 h-20 rounded-[2rem] bg-rose-500/10 flex items-center justify-center text-rose-500">
+               <Trash2 className="w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <DialogTitle className="text-2xl font-black tracking-tight">Delete record?</DialogTitle>
+              <DialogDescription className="text-muted-foreground font-medium">
+                This transaction will be permanently removed. This cannot be undone.
+              </DialogDescription>
+            </div>
           </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => setDeleteId(null)} className="rounded-xl font-bold">Cancel</Button>
+          <div className="flex gap-3 mt-6">
+            <Button variant="ghost" onClick={() => setDeleteId(null)} className="flex-1 rounded-2xl h-12 font-bold">
+              Keep it
+            </Button>
             <Button 
               variant="destructive" 
               onClick={handleConfirmDelete} 
               disabled={isDeleting}
-              className="rounded-xl font-black"
+              className="flex-1 rounded-2xl h-12 font-black shadow-lg shadow-rose-500/20"
             >
-              {isDeleting ? "Deleting..." : "Confirm Delete"}
+              {isDeleting ? "Deleting..." : "Delete Now"}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
