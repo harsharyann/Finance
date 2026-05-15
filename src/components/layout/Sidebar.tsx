@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   BarChart3,
   Wallet,
-  PlusCircle,
   CalendarDays,
   CalendarRange,
   Moon,
@@ -16,7 +15,6 @@ import {
   TrendingUp,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { AddTransactionModal } from "@/components/transactions/AddTransactionModal"
 import { createClient } from "@/utils/supabase/client"
 import { signOut } from "@/app/auth/actions"
 import { useTheme } from "@/context/ThemeContext"
@@ -139,16 +137,6 @@ export function Sidebar() {
             <p className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] mt-0.5 leading-none">Powered by Sociusin</p>
           </div>
         </div>
-      </div>
-
-      {/* === QUICK ADD BUTTON === */}
-      <div className="px-3 pb-4">
-        <AddTransactionModal>
-          <button className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold hover:bg-primary hover:text-white transition-all duration-200 border border-primary/20 hover:border-primary hover:shadow-md hover:shadow-primary/20">
-            <PlusCircle className="w-4 h-4" />
-            New Transaction
-          </button>
-        </AddTransactionModal>
       </div>
 
       {/* === DIVIDER === */}
