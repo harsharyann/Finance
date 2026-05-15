@@ -43,23 +43,27 @@ const formSchema = z.object({
 interface AddDebtModalProps {
   children?: React.ReactNode
   onDebtAdded?: () => void
+  debt?: any
 }
 
 // @ts-ignore - Brute-force cast to any for Vercel stability
 const DT: any = DialogTrigger
 
-export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
+export function AddDebtModal({ children, onDebtAdded, debt }: AddDebtModalProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
+  const isEditing = !!debt
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: "to_receive",
-      person_name: "",
-      amount: "",
-      note: "",
+      type: debt?.type || "to_receive",
+      person_name: debt?.person_name || "",
+      amount: debt?.amount?.toString() || "",
+      note: debt?.note || "",
+      due_date: debt?.due_date || "",
     },
   })
 
@@ -69,21 +73,33 @@ export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const { error } = await (supabase.from('debts') as any)
-        .insert({
-          ...values,
-          user_id: user.id,
-          amount: Number(values.amount)
-        })
+      if (isEditing) {
+        const { error } = await (supabase.from('debts') as any)
+          .update({
+            ...values,
+            amount: Number(values.amount)
+          })
+          .eq('id', debt.id)
 
-      if (error) throw error
+        if (error) throw error
+        toast.success("Record updated successfully")
+      } else {
+        const { error } = await (supabase.from('debts') as any)
+          .insert({
+            ...values,
+            user_id: user.id,
+            amount: Number(values.amount)
+          })
 
-      toast.success("Record added successfully")
+        if (error) throw error
+        toast.success("Record added successfully")
+      }
+
       setOpen(false)
-      form.reset()
+      if (!isEditing) form.reset()
       onDebtAdded?.()
     } catch (error: any) {
-      toast.error(error.message || "Failed to add record")
+      toast.error(error.message || `Failed to ${isEditing ? 'update' : 'add'} record`)
     } finally {
       setLoading(false)
     }
@@ -99,41 +115,47 @@ export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
           </Button>
         )}
       </DT>
-      <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none max-w-lg shadow-2xl">
-        <div className="bg-primary p-8 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
-          <DialogHeader className="relative">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-4 backdrop-blur-sm">
-              <UserPlus className="w-6 h-6 text-white" />
+      <DialogContent className="rounded-[3rem] p-0 overflow-hidden border-none max-w-lg shadow-2xl bg-transparent">
+        <div className="bg-primary p-10 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full -ml-16 -mb-16 blur-2xl" />
+          
+          <DialogHeader className="relative z-10">
+            <div className="w-16 h-16 rounded-[1.5rem] bg-white/20 flex items-center justify-center mb-6 backdrop-blur-md shadow-xl border border-white/20">
+              {isEditing ? <FileText className="w-8 h-8 text-white" /> : <UserPlus className="w-8 h-8 text-white" />}
             </div>
-            <DialogTitle className="text-3xl font-black tracking-tight text-white">Naya Debt / Credit</DialogTitle>
-            <p className="text-white/70 text-sm font-medium">Add a new debt or credit entry to your ledger.</p>
+            <DialogTitle className="text-4xl font-black tracking-tight text-white">
+              {isEditing ? 'Edit Record' : 'Naya Khata'}
+            </DialogTitle>
+            <p className="text-white/70 text-sm font-medium mt-2">
+              {isEditing ? 'Modify your existing debt/credit entry.' : 'Add a new debt or credit entry to your ledger.'}
+            </p>
           </DialogHeader>
         </div>
 
-        <div className="p-8 bg-card">
+        <div className="p-10 bg-card/95 backdrop-blur-xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
                  <FormField
                   control={form.control}
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Type</FormLabel>
+                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2 block">Transaction Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="rounded-xl h-12 font-bold border-muted bg-muted/30">
+                          <SelectTrigger className="rounded-2xl h-14 font-bold border-none bg-muted/50 focus:ring-2 focus:ring-primary/20">
                             <SelectValue placeholder="Select type" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="rounded-xl">
-                          <SelectItem value="to_receive" className="font-bold text-emerald-600">Lene Hain (Receive)</SelectItem>
-                          <SelectItem value="to_pay" className="font-bold text-rose-600">Dene Hain (Pay)</SelectItem>
+                        <SelectContent className="rounded-2xl border-none shadow-2xl">
+                          <SelectItem value="to_receive" className="font-bold text-emerald-600 focus:bg-emerald-50">Lene Hain (Receive)</SelectItem>
+                          <SelectItem value="to_pay" className="font-bold text-rose-600 focus:bg-rose-50">Dene Hain (Pay)</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage className="text-[10px] font-bold" />
+                      <FormMessage className="text-[10px] font-bold text-rose-500" />
                     </FormItem>
                   )}
                 />
@@ -143,19 +165,21 @@ export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Amount (₹)</FormLabel>
+                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2 block">Amount (₹)</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <div className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center bg-primary/10 rounded-lg">
+                            <Wallet className="w-3 h-3 text-primary" />
+                          </div>
                           <Input 
                             type="number" 
                             placeholder="0.00" 
-                            className="rounded-xl h-12 pl-11 font-black text-lg bg-muted/30 border-muted" 
+                            className="rounded-2xl h-14 pl-14 font-black text-xl bg-muted/50 border-none focus:ring-2 focus:ring-primary/20" 
                             {...field} 
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-[10px] font-bold" />
+                      <FormMessage className="text-[10px] font-bold text-rose-500" />
                     </FormItem>
                   )}
                 />
@@ -166,15 +190,20 @@ export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
                 name="person_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Person Name</FormLabel>
+                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2 block">Person Name</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="e.g. Ramesh Bhai" 
-                        className="rounded-xl h-12 font-bold bg-muted/30 border-muted" 
-                        {...field} 
-                      />
+                      <div className="relative">
+                        <div className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center bg-primary/10 rounded-lg">
+                          <UserPlus className="w-3 h-3 text-primary" />
+                        </div>
+                        <Input 
+                          placeholder="e.g. Ramesh Bhai" 
+                          className="rounded-2xl h-14 pl-14 font-bold bg-muted/50 border-none focus:ring-2 focus:ring-primary/20" 
+                          {...field} 
+                        />
+                      </div>
                     </FormControl>
-                    <FormMessage className="text-[10px] font-bold" />
+                    <FormMessage className="text-[10px] font-bold text-rose-500" />
                   </FormItem>
                 )}
               />
@@ -185,18 +214,20 @@ export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
                   name="due_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Due Date (Optional)</FormLabel>
+                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2 block">Due Date (Optional)</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                           <div className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center bg-primary/10 rounded-lg">
+                            <CalendarDays className="w-3 h-3 text-primary" />
+                          </div>
                           <Input 
                             type="date" 
-                            className="rounded-xl h-12 pl-11 font-bold bg-muted/30 border-muted" 
+                            className="rounded-2xl h-14 pl-14 font-bold bg-muted/50 border-none focus:ring-2 focus:ring-primary/20" 
                             {...field} 
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-[10px] font-bold" />
+                      <FormMessage className="text-[10px] font-bold text-rose-500" />
                     </FormItem>
                   )}
                 />
@@ -206,18 +237,20 @@ export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
                   name="note"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Note / Vivaran</FormLabel>
+                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2 block">Note / Vivaran</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <div className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center bg-primary/10 rounded-lg">
+                            <FileText className="w-3 h-3 text-primary" />
+                          </div>
                           <Input 
                             placeholder="e.g. Purana hisab" 
-                            className="rounded-xl h-12 pl-11 font-bold bg-muted/30 border-muted" 
+                            className="rounded-2xl h-14 pl-14 font-bold bg-muted/50 border-none focus:ring-2 focus:ring-primary/20" 
                             {...field} 
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-[10px] font-bold" />
+                      <FormMessage className="text-[10px] font-bold text-rose-500" />
                     </FormItem>
                   )}
                 />
@@ -226,13 +259,19 @@ export function AddDebtModal({ children, onDebtAdded }: AddDebtModalProps) {
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full h-14 rounded-2xl font-black text-base shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all mt-4"
+                className="w-full h-16 rounded-[2rem] font-black text-lg shadow-2xl shadow-primary/20 hover:shadow-primary/40 transition-all mt-6 relative overflow-hidden group"
               >
-                {loading ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                ) : (
-                  "Add Record to Khata"
-                )}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 group-hover:scale-105 transition-transform" />
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  {loading ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    <>
+                      {isEditing ? 'Update Record' : 'Save to Khata'}
+                      <Wallet className="w-5 h-5" />
+                    </>
+                  )}
+                </span>
               </Button>
             </form>
           </Form>

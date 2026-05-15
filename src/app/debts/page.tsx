@@ -42,7 +42,8 @@ function DebtContent() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const { data, error } = await (supabase.from('debts') as any)
+      const { data, error } = await supabase
+        .from('debts')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -53,6 +54,31 @@ function DebtContent() {
       toast.error("Failed to load records")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this record?")) return
+    
+    try {
+      const { error } = await supabase.from('debts').delete().eq('id', id)
+      if (error) throw error
+      toast.success("Record deleted successfully")
+      handleRefresh()
+    } catch (error) {
+      toast.error("Failed to delete record")
+    }
+  }
+
+  const handleSettle = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'settled' ? 'pending' : 'settled'
+    try {
+      const { error } = await supabase.from('debts').update({ status: newStatus as any }).eq('id', id)
+      if (error) throw error
+      toast.success(`Record marked as ${newStatus}`)
+      handleRefresh()
+    } catch (error) {
+      toast.error("Failed to update status")
     }
   }
 
@@ -67,7 +93,7 @@ function DebtContent() {
   )
 
   return (
-    <div className="space-y-8 animate-in-fade">
+    <div className="space-y-8 animate-in-fade pb-20">
       
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -81,42 +107,55 @@ function DebtContent() {
         </div>
         
         <AddDebtModal onDebtAdded={handleRefresh}>
-          <Button className="rounded-2xl h-14 px-8 font-black text-base shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all">
-            <Plus className="w-5 h-5 mr-2" />
-            Naya Record
+          <Button className="rounded-[2rem] h-16 px-10 font-black text-lg shadow-2xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all group overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 group-hover:scale-105 transition-transform" />
+            <div className="relative flex items-center gap-2">
+              <Plus className="w-6 h-6" />
+              Naya Record
+            </div>
           </Button>
         </AddDebtModal>
       </div>
 
       {/* STAT CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <Card className="premium-card bg-emerald-500/5 border-emerald-500/20 overflow-hidden group">
-          <CardContent className="pt-8 relative">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform">
-               <ArrowUpRight className="w-24 h-24" />
+        <Card className="premium-card bg-emerald-500/[0.03] border-emerald-500/20 overflow-hidden group hover:border-emerald-500/40 transition-all duration-500">
+          <CardContent className="pt-10 pb-8 px-8 relative">
+            <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:scale-125 group-hover:rotate-12 transition-all duration-700">
+               <ArrowUpRight className="w-32 h-32 text-emerald-600" />
             </div>
             <div className="relative">
-              <p className="text-emerald-600/60 text-[10px] font-black uppercase tracking-[0.2em] mb-2">Mera Lena (To Receive)</p>
-              <p className="text-4xl font-black text-emerald-600 tabular-nums">₹{totals.receivable.toLocaleString('en-IN')}</p>
-              <div className="mt-4 flex items-center gap-2 text-xs font-bold text-emerald-600/70 bg-emerald-500/10 w-fit px-3 py-1.5 rounded-full">
-                 <CheckCircle2 className="w-3.5 h-3.5" />
-                 Total active receivables
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                  <ArrowUpRight className="w-5 h-5 text-emerald-600" />
+                </div>
+                <p className="text-emerald-600/60 text-[11px] font-black uppercase tracking-[0.2em]">Mera Lena (To Receive)</p>
+              </div>
+              <p className="text-5xl font-black text-emerald-600 tabular-nums tracking-tight">₹{totals.receivable.toLocaleString('en-IN')}</p>
+              <div className="mt-6 flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-500/10 w-fit px-4 py-2 rounded-2xl">
+                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                 Active receivables
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="premium-card bg-rose-500/5 border-rose-500/20 overflow-hidden group">
-          <CardContent className="pt-8 relative">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform">
-               <ArrowDownLeft className="w-24 h-24" />
+        <Card className="premium-card bg-rose-500/[0.03] border-rose-500/20 overflow-hidden group hover:border-rose-500/40 transition-all duration-500">
+          <CardContent className="pt-10 pb-8 px-8 relative">
+            <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:scale-125 group-hover:-rotate-12 transition-all duration-700">
+               <ArrowDownLeft className="w-32 h-32 text-rose-600" />
             </div>
             <div className="relative">
-              <p className="text-rose-600/60 text-[10px] font-black uppercase tracking-[0.2em] mb-2">Mera Karza (To Pay)</p>
-              <p className="text-4xl font-black text-rose-600 tabular-nums">₹{totals.payable.toLocaleString('en-IN')}</p>
-              <div className="mt-4 flex items-center gap-2 text-xs font-bold text-rose-600/70 bg-rose-500/10 w-fit px-3 py-1.5 rounded-full">
-                 <Clock className="w-3.5 h-3.5" />
-                 Total outstanding debts
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+                  <ArrowDownLeft className="w-5 h-5 text-rose-600" />
+                </div>
+                <p className="text-rose-600/60 text-[11px] font-black uppercase tracking-[0.2em]">Mera Karza (To Pay)</p>
+              </div>
+              <p className="text-5xl font-black text-rose-600 tabular-nums tracking-tight">₹{totals.payable.toLocaleString('en-IN')}</p>
+              <div className="mt-6 flex items-center gap-2 text-xs font-bold text-rose-600 bg-rose-500/10 w-fit px-4 py-2 rounded-2xl">
+                 <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                 Outstanding debts
               </div>
             </div>
           </CardContent>
@@ -124,16 +163,20 @@ function DebtContent() {
       </div>
 
       {/* SEARCH & FILTERS */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-         <div className="relative w-full md:w-96">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card/40 backdrop-blur-xl p-4 rounded-[2rem] border shadow-sm">
+         <div className="relative w-full md:w-[28rem]">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
             <input 
               type="text" 
-              placeholder="Search by person name..." 
+              placeholder="Search by person name or note..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-12 pl-11 pr-4 rounded-2xl border bg-card text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full h-14 pl-14 pr-6 rounded-2xl border-none bg-muted/50 text-base font-medium focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/40"
             />
+         </div>
+         <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-4">
+            <Users className="w-4 h-4" />
+            {filteredDebts.length} Records found
          </div>
       </div>
 
@@ -141,69 +184,106 @@ function DebtContent() {
       <div className="space-y-4">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-primary/20" />
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
             <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/40">Fetching Ledger...</p>
           </div>
         ) : filteredDebts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center gap-4 bg-muted/20 rounded-[3rem] border-2 border-dashed">
-             <Wallet className="w-16 h-16 text-muted-foreground/20" />
-             <div className="space-y-1">
-                <p className="text-xl font-black text-foreground">Clean Khata!</p>
-                <p className="text-sm text-muted-foreground font-medium">No active debts or credits found.</p>
+          <div className="flex flex-col items-center justify-center py-24 text-center gap-6 bg-card/20 rounded-[4rem] border-2 border-dashed border-muted/50">
+             <div className="w-24 h-24 rounded-[2.5rem] bg-muted/30 flex items-center justify-center">
+                <Wallet className="w-12 h-12 text-muted-foreground/20" />
+             </div>
+             <div className="space-y-2">
+                <p className="text-2xl font-black text-foreground">Clean Khata!</p>
+                <p className="text-muted-foreground font-medium max-w-[250px] mx-auto text-sm">You don't have any active debts or credits at the moment.</p>
              </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredDebts.map((debt) => (
               <div 
                 key={debt.id}
                 className={cn(
-                  "relative p-6 rounded-[2.5rem] border bg-card/50 backdrop-blur-sm transition-all hover:shadow-2xl hover:shadow-black/5 group",
-                  debt.status === 'settled' ? "opacity-60 grayscale" : ""
+                  "relative p-8 rounded-[3rem] border bg-card/60 backdrop-blur-md transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 group overflow-hidden",
+                  debt.status === 'settled' ? "opacity-60 grayscale-[0.5]" : "hover:-translate-y-2 hover:border-primary/20"
                 )}
               >
-                <div className="flex items-start justify-between mb-4">
+                {/* Background Decor */}
+                <div className={cn(
+                  "absolute -right-12 -bottom-12 w-40 h-40 rounded-full blur-[80px] opacity-10 transition-all group-hover:scale-150 group-hover:opacity-20",
+                  debt.type === 'to_receive' ? "bg-emerald-500" : "bg-rose-500"
+                )} />
+
+                <div className="flex items-start justify-between mb-8 relative">
                    <div className={cn(
-                     "w-12 h-12 rounded-2xl flex items-center justify-center",
+                     "w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-inner",
                      debt.type === 'to_receive' ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
                    )}>
-                     {debt.type === 'to_receive' ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownLeft className="w-6 h-6" />}
+                     {debt.type === 'to_receive' ? <ArrowUpRight className="w-8 h-8" /> : <ArrowDownLeft className="w-8 h-8" />}
                    </div>
-                   <div className="flex items-center gap-1">
+                   <div className="flex flex-col items-end gap-2">
                       <span className={cn(
-                        "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
-                        debt.status === 'settled' ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+                        "text-[10px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-2xl shadow-sm border",
+                        debt.status === 'settled' 
+                          ? "bg-slate-100 text-slate-500 border-slate-200" 
+                          : "bg-primary/10 text-primary border-primary/20"
                       )}>
                         {debt.status}
                       </span>
                    </div>
                 </div>
 
-                <div className="space-y-1">
-                   <h3 className="text-xl font-black text-foreground tracking-tight">{debt.person_name}</h3>
-                   <p className="text-xs font-bold text-muted-foreground truncate">{debt.note || "No notes added"}</p>
+                <div className="space-y-2 relative mb-10">
+                   <h3 className="text-2xl font-black text-foreground tracking-tight group-hover:text-primary transition-colors">{debt.person_name}</h3>
+                   <div className="flex items-center gap-2 text-muted-foreground font-semibold">
+                      <FileText className="w-4 h-4 opacity-40" />
+                      <p className="text-sm truncate">{debt.note || "Bina vivaran"}</p>
+                   </div>
                 </div>
 
-                <div className="mt-6 flex items-end justify-between">
+                <div className="flex items-end justify-between relative">
                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 leading-none mb-1.5">Amount</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 leading-none mb-3">Total Amount</p>
                       <p className={cn(
-                        "text-2xl font-black tabular-nums",
+                        "text-3xl font-black tabular-nums tracking-tight",
                         debt.type === 'to_receive' ? "text-emerald-600" : "text-rose-600"
                       )}>
                         ₹{Number(debt.amount).toLocaleString('en-IN')}
                       </p>
                    </div>
                    <div className="text-right">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1.5">Date</p>
-                      <p className="text-xs font-bold text-foreground">{format(new Date(debt.created_at), 'dd MMM yyyy')}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mb-3">Created On</p>
+                      <p className="text-sm font-bold text-foreground/80">{format(new Date(debt.created_at), 'dd MMM, yyyy')}</p>
                    </div>
                 </div>
 
                 {/* Hover Actions */}
-                <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <button className="w-9 h-9 rounded-xl bg-card border flex items-center justify-center text-muted-foreground hover:text-rose-500 transition-colors">
-                      <Trash2 className="w-4 h-4" />
+                <div className="mt-10 pt-6 border-t border-dashed border-muted flex items-center justify-between gap-3 relative">
+                   <div className="flex items-center gap-2">
+                      <AddDebtModal debt={debt} onDebtAdded={handleRefresh}>
+                        <button className="w-10 h-10 rounded-2xl bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-300">
+                          <Plus className="w-5 h-5 rotate-45" /> {/* Using Plus rotated for edit or maybe just use an Edit icon */}
+                        </button>
+                      </AddDebtModal>
+                      
+                      <button 
+                        onClick={() => handleDelete(debt.id)}
+                        className="w-10 h-10 rounded-2xl bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all duration-300"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                   </div>
+
+                   <button 
+                    onClick={() => handleSettle(debt.id, debt.status)}
+                    className={cn(
+                      "flex-1 h-10 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2",
+                      debt.status === 'settled' 
+                        ? "bg-slate-200 text-slate-500 hover:bg-slate-300" 
+                        : "bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5"
+                    )}
+                   >
+                     {debt.status === 'settled' ? <Clock className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                     {debt.status === 'settled' ? 'Reopen' : 'Settle Now'}
                    </button>
                 </div>
               </div>

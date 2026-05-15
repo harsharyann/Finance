@@ -101,6 +101,40 @@ export interface Database {
           status?: 'upcoming' | 'paid' | 'due'
           created_at?: string
         }
+      debts: {
+        Row: {
+          id: string
+          user_id: string
+          amount: number
+          type: 'to_receive' | 'to_pay'
+          person_name: string
+          note: string | null
+          due_date: string | null
+          status: 'pending' | 'settled'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount: number
+          type: 'to_receive' | 'to_pay'
+          person_name: string
+          note?: string | null
+          due_date?: string | null
+          status?: 'pending' | 'settled'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount?: number
+          type?: 'to_receive' | 'to_pay'
+          person_name?: string
+          note?: string | null
+          due_date?: string | null
+          status?: 'pending' | 'settled'
+          created_at?: string
+        }
       }
     }
     Views: {
