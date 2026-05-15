@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import { useState, useMemo } from "react"
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -42,44 +42,26 @@ function getCategoryColor(cat: string) {
   return categoryColors[cat] || "bg-primary/10 text-primary"
 }
 
-export function TransactionTable() {
-  const [transactions, setTransactions] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+interface TransactionTableProps {
+  transactions: any[]
+  loading: boolean
+  onDelete?: () => void
+  isAdminView?: boolean
+}
+
+export function TransactionTable({ 
+  transactions, 
+  loading, 
+  onDelete,
+  isAdminView = false 
+}: TransactionTableProps) {
   const [search, setSearch] = useState("")
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all")
-  
-  // Delete confirmation state
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const supabase = createClient()
   const router = useRouter()
-
-  useEffect(() => {
-    fetchTransactions()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  async function fetchTransactions() {
-    setLoading(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { data, error } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("date", { ascending: false })
-
-      if (error) throw error
-      setTransactions(data || [])
-    } catch {
-      toast.error("Failed to load transactions")
-    } finally {
-      setLoading(false)
-    }
-  }
 
   async function handleConfirmDelete() {
     if (!deleteId) return
@@ -88,7 +70,7 @@ export function TransactionTable() {
       const { error } = await (supabase.from("transactions") as any).delete().eq("id", deleteId)
       if (error) throw error
       toast.success("Transaction deleted")
-      setTransactions((prev) => prev.filter((t) => t.id !== deleteId))
+      onDelete?.()
       router.refresh()
     } catch {
       toast.error("Failed to delete")
@@ -110,35 +92,34 @@ export function TransactionTable() {
     })
   }, [transactions, search, filterType])
 
-  // Summary stats
   const totalIncome = filtered.filter(t => t.type === "income").reduce((a, c) => a + Number(c.amount), 0)
   const totalExpense = filtered.filter(t => t.type === "expense").reduce((a, c) => a + Number(c.amount), 0)
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 p-4 sm:p-6">
 
-      {/* === SEARCH + FILTER BAR === */}
+      {/* SEARCH + FILTER BAR */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by note, category or method..."
-            className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+            placeholder="Search transactions..."
+            className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 bg-muted rounded-xl p-1">
+        <div className="flex items-center gap-1.5 bg-muted/50 rounded-xl p-1">
           {(["all", "income", "expense"] as const).map((type) => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
               className={cn(
-                "px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-150 capitalize",
+                "px-4 py-1.5 rounded-lg text-sm font-bold transition-all capitalize",
                 filterType === type
-                  ? "bg-card text-foreground shadow-sm border border-border"
+                  ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -148,175 +129,98 @@ export function TransactionTable() {
         </div>
       </div>
 
-      {/* === MINI SUMMARY ROW === */}
+      {/* MINI SUMMARY ROW */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border border-l-4 border-l-emerald-500">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center flex-shrink-0">
-            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          </div>
+        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+          <TrendingUp className="w-4 h-4 text-emerald-600" />
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Income</p>
-            <p className="text-base font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
-              +₹{totalIncome.toLocaleString("en-IN")}
-            </p>
+            <p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest leading-none">Inflow</p>
+            <p className="text-sm font-black text-emerald-600 tabular-nums mt-1">₹{totalIncome.toLocaleString("en-IN")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border border-l-4 border-l-rose-500">
-          <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950 flex items-center justify-center flex-shrink-0">
-            <TrendingDown className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-          </div>
+        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-rose-500/5 border border-rose-500/10">
+          <TrendingDown className="w-4 h-4 text-rose-600" />
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Expenses</p>
-            <p className="text-base font-black text-rose-600 dark:text-rose-400 tabular-nums">
-              -₹{totalExpense.toLocaleString("en-IN")}
-            </p>
+            <p className="text-[10px] font-black text-rose-600/60 uppercase tracking-widest leading-none">Outflow</p>
+            <p className="text-sm font-black text-rose-600 tabular-nums mt-1">₹{totalExpense.toLocaleString("en-IN")}</p>
           </div>
         </div>
       </div>
 
-      {/* === TABLE / LIST === */}
+      {/* TABLE / LIST */}
       {loading ? (
-        <div className="flex justify-center items-center h-52 bg-card border border-border rounded-2xl">
-          <Loader2 className="w-7 h-7 animate-spin text-primary" />
+        <div className="flex justify-center items-center h-52">
+          <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-52 bg-card border border-border rounded-2xl gap-3">
-          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-            <Search className="w-5 h-5 text-muted-foreground" />
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-semibold text-foreground">No transactions found</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {search ? "Try a different search term" : "Add your first transaction!"}
-            </p>
-          </div>
+        <div className="flex flex-col items-center justify-center h-52 text-center gap-2">
+          <AlertCircle className="w-8 h-8 text-muted-foreground/30" />
+          <p className="text-sm font-bold text-muted-foreground">No transactions found</p>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-          {/* Table Header */}
-          <div className="hidden sm:grid grid-cols-[1fr_120px_100px_100px_110px_44px] gap-0 px-4 py-3 bg-muted/50 border-b border-border">
-            {["Transaction", "Category", "Date", "Method", "Amount", ""].map((h, i) => (
-              <p key={i} className={cn(
-                "text-[11px] font-black uppercase tracking-wider text-muted-foreground",
-                i === 4 ? "text-right" : ""
-              )}>{h}</p>
-            ))}
-          </div>
-
-          {/* Rows */}
-          <div className="divide-y divide-border">
-            {filtered.map((t, idx) => (
-              <div
-                key={t.id}
-                className="grid grid-cols-[1fr_110px_44px] sm:grid-cols-[1fr_120px_100px_100px_110px_44px] gap-0 px-4 py-3.5 items-center hover:bg-muted/30 transition-colors duration-100 animate-in-fade"
-                style={{ animationDelay: `${idx * 20}ms` }}
-              >
-                {/* Transaction name + icon */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={cn(
-                    "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0",
-                    t.type === "income"
-                      ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400"
-                      : "bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400"
-                  )}>
-                    {t.type === "income"
-                      ? <ArrowUpRight className="w-4 h-4" />
-                      : <ArrowDownLeft className="w-4 h-4" />
-                    }
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate leading-none">
-                      {t.note || t.category}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-2">
-                      <span className="sm:hidden">{format(new Date(t.date), "dd MMM")}</span>
-                      <span className="sm:hidden">•</span>
-                      <span>{t.category}</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Category chip (Hidden on mobile) */}
-                <div className="hidden sm:block">
-                  <span className={cn(
-                    "inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold",
-                    getCategoryColor(t.category)
-                  )}>
-                    {t.category}
-                  </span>
-                </div>
-
-                {/* Date (Hidden on mobile) */}
-                <p className="hidden sm:block text-sm text-muted-foreground font-medium">
-                  {format(new Date(t.date), "dd MMM")}
-                </p>
-
-                {/* Method (Hidden on mobile) */}
-                <p className="hidden sm:block text-sm text-muted-foreground font-medium truncate">
-                  {t.payment_method || "—"}
-                </p>
-
-                {/* Amount */}
-                <p className={cn(
-                  "text-sm font-black text-right tabular-nums",
-                  t.type === "income"
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-rose-600 dark:text-rose-400"
+        <div className="space-y-1">
+          {filtered.map((t) => (
+            <div
+              key={t.id}
+              className="group flex items-center justify-between p-3.5 hover:bg-muted/30 rounded-2xl transition-all border border-transparent hover:border-border"
+            >
+              <div className="flex items-center gap-4">
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center",
+                  t.type === "income" ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
                 )}>
-                  {t.type === "income" ? "+" : "−"}₹{t.amount.toLocaleString("en-IN")}
-                </p>
-
-                {/* Delete */}
-                <div className="flex justify-center ml-2">
-                  <button
-                    onClick={() => setDeleteId(t.id)}
-                    className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-rose-50 dark:hover:bg-rose-950 hover:text-rose-500 transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {t.type === "income" ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                </div>
+                <div>
+                  <p className="text-sm font-black text-foreground">{t.note || t.category}</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{t.category}</span>
+                    <span className="w-1 h-1 rounded-full bg-border" />
+                    <span className="text-[10px] font-bold text-muted-foreground">{format(new Date(t.date), "dd MMM yyyy")}</span>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Footer count */}
-          <div className="px-4 py-3 border-t border-border bg-muted/30">
-            <p className="text-xs text-muted-foreground font-medium">
-              Showing <span className="text-foreground font-bold">{filtered.length}</span> of <span className="text-foreground font-bold">{transactions.length}</span> transactions
-            </p>
-          </div>
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <p className={cn(
+                    "text-sm font-black tabular-nums",
+                    t.type === "income" ? "text-emerald-600" : "text-rose-600"
+                  )}>
+                    {t.type === "income" ? "+" : "-"}₹{t.amount.toLocaleString("en-IN")}
+                  </p>
+                  <p className="text-[10px] font-bold text-muted-foreground mt-0.5">{t.payment_method}</p>
+                </div>
+                <button
+                  onClick={() => setDeleteId(t.id)}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* === DELETE CONFIRMATION DIALOG === */}
+      {/* DELETE DIALOG */}
       <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <DialogContent className="rounded-2xl">
+        <DialogContent className="rounded-[2rem]">
           <DialogHeader>
-            <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950 flex items-center justify-center text-rose-600 dark:text-rose-400 mb-2">
-              <AlertCircle className="w-6 h-6" />
-            </div>
-            <DialogTitle>Delete Transaction?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete the transaction record from your account.
+            <DialogTitle className="text-xl font-black">Delete Transaction?</DialogTitle>
+            <DialogDescription className="font-medium">
+              This will permanently remove this record. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="sm:justify-start gap-2 pt-2">
-            <Button
-              variant="destructive"
-              className="rounded-xl font-bold flex-1 sm:flex-none"
-              onClick={handleConfirmDelete}
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setDeleteId(null)} className="rounded-xl font-bold">Cancel</Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleConfirmDelete} 
               disabled={isDeleting}
+              className="rounded-xl font-black"
             >
-              {isDeleting ? "Deleting..." : "Yes, Delete"}
-            </Button>
-            <Button
-              variant="outline"
-              className="rounded-xl font-bold flex-1 sm:flex-none"
-              onClick={() => setDeleteId(null)}
-              disabled={isDeleting}
-            >
-              Cancel
+              {isDeleting ? "Deleting..." : "Confirm Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
