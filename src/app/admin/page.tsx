@@ -41,8 +41,7 @@ export default function AdminPage() {
       return
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
+    const { data: profile } = await (supabase.from('profiles') as any)
       .select('role')
       .eq('id', user.id)
       .single()

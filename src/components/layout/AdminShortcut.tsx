@@ -14,8 +14,7 @@ export function AdminShortcut() {
       if (e.shiftKey && e.altKey && e.key.toLowerCase() === 'a') {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
-          const { data } = await supabase
-            .from('profiles')
+          const { data } = await (supabase.from('profiles') as any)
             .select('role')
             .eq('id', user.id)
             .single()
