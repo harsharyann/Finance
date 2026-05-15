@@ -257,7 +257,7 @@ export function MonthlyReport() {
             </div>
           </div>
 
-          {/* === PRINT-ONLY BAHI-KHATA LAYOUT === */}
+          {/* === PRINT-ONLY SOCIUS-KHATA LAYOUT === */}
           <div className="hidden print:block" style={{ fontFamily: "Georgia, serif", color: "#111", background: "#fff", padding: "32px" }}>
             {/* Letterhead */}
             <div style={{ borderBottom: "3px double #E8642A", paddingBottom: "16px", marginBottom: "24px" }}>
@@ -267,7 +267,7 @@ export function MonthlyReport() {
                   <div style={{ fontSize: "11px", color: "#666", letterSpacing: "0.1em", textTransform: "uppercase" }}>Powered by Sociusin</div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: "20px", fontWeight: 700, color: "#111" }}>Bahi-Khata Report</div>
+                  <div style={{ fontSize: "20px", fontWeight: 700, color: "#111" }}>socius-Khata Report</div>
                   <div style={{ fontSize: "13px", color: "#555", marginTop: "4px" }}>{data.month}</div>
                   <div style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>Generated: {data.generatedAt}</div>
                 </div>
