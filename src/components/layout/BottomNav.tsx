@@ -2,17 +2,15 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Wallet, BarChart3, Plus, Users, CalendarDays } from "lucide-react"
+import { LayoutDashboard, Wallet, BarChart3, Users, CalendarDays } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { AddTransactionModal } from "@/components/transactions/AddTransactionModal"
 
-const leftNav = [
-  { name: "Home", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Txns", href: "/transactions", icon: Wallet },
-]
-const rightNav = [
-  { name: "Debts", href: "/debts", icon: Users },
-  { name: "Bills", href: "/bills", icon: CalendarDays },
+const navItems = [
+  { name: "Home",    href: "/dashboard",    icon: LayoutDashboard },
+  { name: "Txns",   href: "/transactions", icon: Wallet },
+  { name: "Reports",href: "/reports",      icon: BarChart3 },
+  { name: "Debts",  href: "/debts",        icon: Users },
+  { name: "Bills",  href: "/bills",        icon: CalendarDays },
 ]
 
 export function BottomNav() {
@@ -23,62 +21,34 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
-      <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
-
-        {/* Left items */}
-        {leftNav.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex flex-col items-center justify-center gap-1 min-w-[56px] py-1 rounded-xl transition-colors",
-              isActive(item.href)
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <div className={cn(
-              "w-8 h-8 rounded-xl flex items-center justify-center transition-colors",
-              isActive(item.href) ? "bg-primary/10" : ""
-            )}>
-              <item.icon className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-semibold">{item.name}</span>
-          </Link>
-        ))}
-
-        {/* Centre FAB */}
-        <AddTransactionModal>
-          <button className="flex items-center justify-center w-13 h-13 rounded-2xl bg-primary text-white shadow-lg shadow-primary/30 -mt-5 hover:bg-primary/90 active:scale-95 transition-all">
-            <Plus className="w-6 h-6" />
-          </button>
-        </AddTransactionModal>
-
-        {/* Right items */}
-        {rightNav.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex flex-col items-center justify-center gap-1 min-w-[56px] py-1 rounded-xl transition-colors",
-              isActive(item.href)
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <div className={cn(
-              "w-8 h-8 rounded-xl flex items-center justify-center transition-colors",
-              isActive(item.href) ? "bg-primary/10" : ""
-            )}>
-              <item.icon className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-semibold">{item.name}</span>
-          </Link>
-        ))}
-
-        {/* Placeholder for symmetry */}
-
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border/60 shadow-2xl">
+      <div className="flex items-center justify-around h-16 px-1 max-w-lg mx-auto">
+        {navItems.map((item) => {
+          const active = isActive(item.href)
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-xl transition-all duration-200",
+                active ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              <div className={cn(
+                "w-9 h-9 rounded-2xl flex items-center justify-center transition-all duration-200",
+                active ? "bg-primary/15 scale-110" : "hover:bg-muted"
+              )}>
+                <item.icon className={cn("w-[18px] h-[18px] transition-transform", active ? "stroke-[2.5]" : "stroke-2")} />
+              </div>
+              <span className={cn(
+                "text-[9px] font-bold tracking-wide transition-all",
+                active ? "text-primary" : "text-muted-foreground/60"
+              )}>
+                {item.name}
+              </span>
+            </Link>
+          )
+        })}
       </div>
     </nav>
   )
