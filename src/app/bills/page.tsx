@@ -2,7 +2,23 @@
 
 import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
-import { CalendarDays, Bell, Clock, Plus, CheckCircle2, Trash2, MoreVertical, AlertCircle } from "lucide-react"
+import { 
+  CalendarDays, 
+  Bell, 
+  Clock, 
+  Plus, 
+  CheckCircle2, 
+  Trash2, 
+  MoreVertical, 
+  AlertCircle,
+  IndianRupee,
+  Zap,
+  Wifi,
+  Home as HomeIcon,
+  ShoppingBag,
+  CreditCard as CardIcon,
+  Wallet as WalletIcon
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { AddBillModal } from "@/components/bills/AddBillModal"
@@ -15,6 +31,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
+
+const CATEGORY_ICONS: Record<string, any> = {
+  Rent: HomeIcon,
+  Electricity: Zap,
+  Water: Zap,
+  Internet: Wifi,
+  Mobile: Wifi,
+  Subscription: ShoppingBag,
+  Insurance: Bell,
+  "Credit Card": CardIcon,
+  EMI: WalletIcon,
+  Other: CalendarDays
+}
 
 export default function BillsPage() {
   const [bills, setBills] = useState<any[]>([])
@@ -60,14 +90,12 @@ export default function BillsPage() {
 
   async function handleMarkAsPaid(bill: any) {
     try {
-      // 1. Update bill status
       const { error: billError } = await (supabase.from('bills') as any)
         .update({ status: 'paid' })
         .eq('id', bill.id)
 
       if (billError) throw billError
 
-      // 2. Automatically add to transactions
       const { error: txError } = await (supabase.from('transactions') as any)
         .insert({
           user_id: bill.user_id,
@@ -90,139 +118,168 @@ export default function BillsPage() {
   const stats = {
     totalPending: bills.filter(b => b.status !== 'paid').reduce((acc, b) => acc + Number(b.amount), 0),
     dueSoon: bills.filter(b => b.status !== 'paid' && isBefore(parseISO(b.due_date), addDays(new Date(), 7))).length,
-    paidThisMonth: bills.filter(b => b.status === 'paid').reduce((acc, b) => acc + Number(b.amount), 0)
+    paidTotal: bills.filter(b => b.status === 'paid').reduce((acc, b) => acc + Number(b.amount), 0)
   }
 
   return (
     <AppLayout>
-      <div className="space-y-8 animate-in-fade">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-heading font-black text-foreground">Bills & Reminders</h1>
-            <p className="text-muted-foreground mt-1">Manage your recurring payments and dues.</p>
+      <div className="space-y-8 animate-in-fade max-w-5xl mx-auto">
+        
+        {/* === MODERN HEADER === */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-primary font-bold tracking-tight text-sm uppercase">
+              <span className="w-8 h-px bg-primary/30" />
+              Manage Dues
+            </div>
+            <h1 className="text-4xl font-black text-foreground tracking-tight">Bills & Reminders</h1>
+            <p className="text-muted-foreground text-sm font-medium">Track and settle your recurring payments seamlessly.</p>
           </div>
           <AddBillModal>
-            <Button className="rounded-xl h-12 px-6 font-bold shadow-lg shadow-primary/20">
-              <Plus className="w-5 h-5 mr-2" />
-              Add New Reminder
+            <Button className="rounded-2xl h-14 px-8 font-black text-base shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all group">
+              <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform" />
+              Add New Bill
             </Button>
           </AddBillModal>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="premium-card bg-card border-border overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Bell className="w-6 h-6" />
+        {/* === PREMIUM STATS GRID === */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {[
+            { 
+              label: "Total Pending", 
+              value: `₹${stats.totalPending.toLocaleString('en-IN')}`, 
+              icon: AlertCircle, 
+              color: "primary", 
+              bg: "bg-primary/5",
+              border: "border-primary/20"
+            },
+            { 
+              label: "Due in 7 Days", 
+              value: `${stats.dueSoon} Bills`, 
+              icon: Clock, 
+              color: "amber-500", 
+              bg: "bg-amber-500/5",
+              border: "border-amber-500/20"
+            },
+            { 
+              label: "Total Paid", 
+              value: `₹${stats.paidTotal.toLocaleString('en-IN')}`, 
+              icon: CheckCircle2, 
+              color: "emerald-500", 
+              bg: "bg-emerald-500/5",
+              border: "border-emerald-500/20"
+            }
+          ].map((stat, i) => (
+            <div 
+              key={i} 
+              className={cn(
+                "relative p-6 rounded-[2rem] border overflow-hidden transition-all hover:scale-[1.02]",
+                stat.bg, stat.border
+              )}
+            >
+              <div className="relative z-10 flex flex-col gap-4">
+                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center bg-background shadow-sm border", stat.border)}>
+                  <stat.icon className={cn("w-6 h-6", `text-${stat.color}`)} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Pending</p>
-                  <p className="text-2xl font-black text-foreground">₹{stats.totalPending.toLocaleString('en-IN')}</p>
+                  <p className="text-xs font-black uppercase tracking-[0.15em] text-muted-foreground/70">{stat.label}</p>
+                  <p className="text-3xl font-black text-foreground mt-1 tabular-nums">{stat.value}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="premium-card bg-card border-border overflow-hidden">
-             <div className="absolute top-0 left-0 w-1 h-full bg-amber-500" />
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
-                  <Clock className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Due Soon (7 days)</p>
-                  <p className="text-2xl font-black text-foreground">{stats.dueSoon} Bills</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="premium-card bg-card border-border overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Paid Total</p>
-                  <p className="text-2xl font-black text-foreground">₹{stats.paidThisMonth.toLocaleString('en-IN')}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              {/* Decorative Background Element */}
+              <div className={cn("absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-3xl opacity-20", `bg-${stat.color}`)} />
+            </div>
+          ))}
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-foreground">Active Reminders</h2>
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted px-3 py-1 rounded-full">
-              {bills.length} Total
-            </div>
+        {/* === BILLS LIST === */}
+        <div className="space-y-5">
+          <div className="flex items-center gap-3 px-1">
+            <h2 className="text-xl font-black text-foreground">Active Subscriptions & Bills</h2>
+            <div className="h-px flex-1 bg-border/60" />
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="flex flex-col items-center justify-center py-24 space-y-4">
+              <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+              <p className="text-sm font-bold text-muted-foreground animate-pulse">Syncing with your ledger...</p>
             </div>
           ) : bills.length === 0 ? (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-3xl border-2 border-dashed border-border">
-              <div className="w-16 h-16 rounded-full bg-background flex items-center justify-center shadow-sm">
-                <Bell className="w-8 h-8 text-muted-foreground/20" />
+            <div className="py-24 flex flex-col items-center justify-center text-center space-y-6 bg-muted/20 rounded-[3rem] border-2 border-dashed border-border/60 mx-1">
+              <div className="w-20 h-20 rounded-[2rem] bg-background flex items-center justify-center shadow-xl border border-border/50 rotate-3 animate-in-zoom">
+                <Bell className="w-10 h-10 text-muted-foreground/30" />
               </div>
-              <div>
-                <h3 className="text-lg font-bold">No bills found</h3>
-                <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                  Click the button above to add your first bill reminder.
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-foreground">No active reminders</h3>
+                <p className="text-muted-foreground max-w-[280px] mx-auto text-sm font-medium">
+                  Add your rent, electricity or subscription bills to never miss a due date again.
                 </p>
               </div>
+              <AddBillModal>
+                <Button variant="outline" className="rounded-2xl h-12 px-6 border-2 font-bold hover:bg-primary hover:text-white transition-all">
+                  Create First Reminder
+                </Button>
+              </AddBillModal>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {bills.map((bill) => {
                 const isOverdue = isBefore(parseISO(bill.due_date), new Date()) && bill.status !== 'paid'
+                const Icon = CATEGORY_ICONS[bill.category] || CATEGORY_ICONS.Other
+                
                 return (
                   <div 
                     key={bill.id} 
-                    className={`group flex items-center justify-between p-5 bg-card border rounded-2xl transition-all hover:shadow-md ${
-                      bill.status === 'paid' ? 'opacity-60 grayscale-[0.5]' : 'hover:border-primary/50'
-                    } ${isOverdue ? 'border-rose-500/50 bg-rose-500/5' : 'border-border'}`}
+                    className={cn(
+                      "group relative flex items-center justify-between p-1.5 pl-5 bg-card border rounded-[2rem] transition-all duration-300",
+                      bill.status === 'paid' ? 'opacity-60 border-border/40' : 'hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5',
+                      isOverdue ? 'border-rose-500/30 bg-rose-500/[0.02]' : 'border-border'
+                    )}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                        bill.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-muted text-muted-foreground group-hover:bg-primary/5 group-hover:text-primary'
-                      }`}>
-                        {bill.status === 'paid' ? <CheckCircle2 className="w-6 h-6" /> : <CalendarDays className="w-6 h-6" />}
+                    <div className="flex items-center gap-5 py-2.5">
+                      {/* Icon with Dynamic Color */}
+                      <div className={cn(
+                        "w-14 h-14 rounded-[1.5rem] flex items-center justify-center transition-all duration-500",
+                        bill.status === 'paid' 
+                          ? 'bg-emerald-500/10 text-emerald-500' 
+                          : 'bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-white group-hover:scale-110 group-hover:rotate-6'
+                      )}>
+                        <Icon className="w-6 h-6" />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-foreground">{bill.name}</h3>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-black text-lg text-foreground tracking-tight">{bill.name}</h3>
                           {isOverdue && (
-                            <span className="flex items-center gap-1 text-[10px] font-bold text-rose-500 uppercase bg-rose-500/10 px-2 py-0.5 rounded-full">
-                              <AlertCircle className="w-3 h-3" /> Overdue
-                            </span>
+                            <div className="flex items-center gap-1 text-[10px] font-black text-rose-500 uppercase bg-rose-500/10 px-2.5 py-1 rounded-full animate-pulse">
+                              <AlertCircle className="w-3.5 h-3.5" /> Overdue
+                            </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                        <div className="flex items-center gap-4">
+                          <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60">
                             {bill.category}
                           </span>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> Due: {format(parseISO(bill.due_date), 'dd MMM, yyyy')}
+                          <div className="w-1 h-1 rounded-full bg-border" />
+                          <span className={cn(
+                            "text-xs font-bold flex items-center gap-1.5",
+                            isOverdue ? "text-rose-500" : "text-muted-foreground"
+                          )}>
+                            <CalendarDays className="w-3.5 h-3.5" />
+                            {format(parseISO(bill.due_date), 'dd MMMM, yyyy')}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6">
+
+                    <div className="flex items-center gap-6 pr-2">
                       <div className="text-right hidden sm:block">
-                        <p className="text-lg font-black text-foreground">₹{Number(bill.amount).toLocaleString('en-IN')}</p>
-                        <p className={`text-[10px] font-black uppercase tracking-wider mt-1 ${
+                        <p className="text-2xl font-black text-foreground tabular-nums">₹{Number(bill.amount).toLocaleString('en-IN')}</p>
+                        <p className={cn(
+                          "text-[10px] font-black uppercase tracking-[0.2em] mt-0.5",
                           bill.status === 'paid' ? 'text-emerald-500' : isOverdue ? 'text-rose-500' : 'text-primary'
-                        }`}>
+                        )}>
                           {bill.status}
                         </p>
                       </div>
@@ -230,30 +287,28 @@ export default function BillsPage() {
                       <div className="flex items-center gap-2">
                         {bill.status !== 'paid' && (
                           <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="rounded-xl font-bold h-9 border-primary/20 text-primary hover:bg-primary/10"
+                            className="rounded-2xl font-black h-12 px-6 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shadow-none border-none"
                             onClick={() => handleMarkAsPaid(bill)}
                           >
-                            Mark Paid
+                            Pay Now
                           </Button>
                         )}
                         
                         <DropdownMenu>
                           <DropdownMenuTrigger
                             render={
-                              <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9">
-                                <MoreVertical className="w-4 h-4" />
+                              <Button variant="ghost" size="icon" className="rounded-2xl h-12 w-12 hover:bg-muted transition-colors">
+                                <MoreVertical className="w-5 h-5 text-muted-foreground" />
                               </Button>
                             }
                           />
-                          <DropdownMenuContent align="end" className="rounded-xl">
+                          <DropdownMenuContent align="end" className="rounded-2xl p-2 min-w-[140px] border-none shadow-2xl">
                             <DropdownMenuItem 
-                              className="text-rose-500 focus:text-rose-500 focus:bg-rose-50 cursor-pointer"
+                              className="text-rose-500 focus:text-rose-500 focus:bg-rose-50 cursor-pointer rounded-xl font-bold p-3"
                               onClick={() => handleDelete(bill.id)}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
+                              Delete Bill
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -265,6 +320,26 @@ export default function BillsPage() {
             </div>
           )}
         </div>
+
+        {/* === FEATURE HIGHLIGHT === */}
+        <div className="p-8 rounded-[3rem] bg-gradient-to-br from-primary/5 via-transparent to-primary/5 border border-primary/10 flex flex-col md:flex-row items-center gap-8">
+          <div className="w-20 h-20 rounded-[2rem] bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 flex-shrink-0">
+            <Zap className="w-10 h-10 text-white" />
+          </div>
+          <div className="space-y-2 text-center md:text-left">
+            <h4 className="text-xl font-black text-foreground">Coming Soon: Automatic Bill Fetch</h4>
+            <p className="text-sm text-muted-foreground font-medium max-w-lg">
+              We're working on a feature that will automatically fetch your bills from SMS and email, 
+              so you don't have to enter them manually. Stay tuned!
+            </p>
+          </div>
+          <div className="md:ml-auto">
+             <div className="px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-widest">
+               v2.0 Beta
+             </div>
+          </div>
+        </div>
+
       </div>
     </AppLayout>
   )
