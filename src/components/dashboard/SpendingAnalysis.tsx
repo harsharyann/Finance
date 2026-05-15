@@ -73,7 +73,7 @@ export function SpendingAnalysis() {
       setTopCategories(sortedCats)
 
       // Financial Health Calculation
-      const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0)
+      const income = txns.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0)
       const savingsRate = income > 0 ? ((income - totalExpense) / income) * 100 : 0
       
       let status = "Excellent"

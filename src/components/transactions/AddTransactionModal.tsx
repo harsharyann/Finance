@@ -34,7 +34,7 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 const formSchema = z.object({
-  amount: z.string().transform((val) => parseFloat(val)),
+  amount: z.string().min(1, "Amount is required"),
   type: z.enum(["income", "expense"]),
   category: z.string().min(1, "Category is required"),
   payment_method: z.string().optional(),
@@ -64,7 +64,10 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
     defaultValues: {
       type: "expense",
       date: new Date().toISOString().split('T')[0],
-      amount: "0" as any,
+      amount: "",
+      category: "",
+      payment_method: "Cash",
+      note: ""
     },
   })
 
@@ -78,11 +81,10 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
         return
       }
 
-      const { error } = await supabase
-        .from('transactions')
+      const { error } = await (supabase.from('transactions') as any)
         .insert({
           user_id: user.id,
-          amount: values.amount,
+          amount: parseFloat(values.amount),
           type: values.type,
           category: values.category,
           payment_method: values.payment_method,
@@ -105,16 +107,14 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          children || (
-            <Button className="rounded-xl gap-2">
-              <Plus className="w-4 h-4" />
-              Add Transaction
-            </Button>
-          )
-        }
-      />
+      <DialogTrigger asChild>
+        {children || (
+          <Button className="rounded-xl gap-2">
+            <Plus className="w-4 h-4" />
+            Add Transaction
+          </Button>
+        )}
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Add Transaction</DialogTitle>

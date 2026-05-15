@@ -56,8 +56,7 @@ export function TransactionTable() {
 
   async function deleteTransaction(id: string) {
     try {
-      const { error } = await supabase
-        .from('transactions')
+      const { error } = await (supabase.from('transactions') as any)
         .delete()
         .eq('id', id)
       
@@ -131,13 +130,11 @@ export function TransactionTable() {
               </TableCell>
               <TableCell>
                 <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    }
-                  />
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                      <MoreHorizontal className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-xl">
                     <DropdownMenuItem className="gap-2">
                       <Edit2 className="w-4 h-4" /> Edit
