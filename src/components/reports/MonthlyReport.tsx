@@ -46,7 +46,7 @@ export function MonthlyReport() {
 
       if (error) throw error
 
-      const all = txns || []
+      const all = (txns || []) as any[]
       const income = all.filter(t => t.type === "income").reduce((a, c) => a + c.amount, 0)
       const expense = all.filter(t => t.type === "expense").reduce((a, c) => a + c.amount, 0)
 

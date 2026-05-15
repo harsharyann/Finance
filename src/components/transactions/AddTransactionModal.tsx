@@ -32,6 +32,7 @@ import { Plus, Loader2 } from "lucide-react"
 import { createClient } from "@/utils/supabase/client"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { format } from "date-fns"
 
 const formSchema = z.object({
   amount: z.string().min(1, "Amount is required"),
@@ -120,14 +121,16 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children || (
-          <Button className="rounded-xl gap-2 font-bold shadow-md hover:shadow-lg transition-all">
-            <Plus className="w-4 h-4" />
-            Add Transaction
-          </Button>
-        )}
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          (children as any) || (
+            <Button className="rounded-xl gap-2 font-bold shadow-md hover:shadow-lg transition-all">
+              <Plus className="w-4 h-4" />
+              Add Transaction
+            </Button>
+          )
+        }
+      />
       <DialogContent className="sm:max-w-[425px] rounded-2xl bg-card border-none shadow-2xl animate-in-slide">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">Add Transaction</DialogTitle>
