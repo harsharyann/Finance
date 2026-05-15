@@ -39,7 +39,8 @@ export default function BillsPage() {
       if (error) throw error
       setBills(data || [])
     } catch (error: any) {
-      toast.error("Failed to fetch bills")
+      console.error("Fetch Error:", error)
+      toast.error(error.message || "Failed to fetch bills")
     } finally {
       setLoading(false)
     }
