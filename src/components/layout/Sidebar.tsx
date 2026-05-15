@@ -48,9 +48,7 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r bg-card p-4 transition-colors">
       <div className="flex items-center gap-2 px-2 mb-8">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-          <Wallet className="w-5 h-5 text-white" />
-        </div>
+        <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
         <div>
           <h1 className="font-bold text-xl tracking-tight text-card-foreground">Finance</h1>
           <p className="text-[10px] text-muted-foreground uppercase tracking-widest -mt-1 leading-none">

@@ -36,9 +36,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8">
         {/* Branding */}
         <div className="flex flex-col items-center text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-            <Wallet className="w-7 h-7 text-white" />
-          </div>
+          <img src="/logo.png" className="w-16 h-16 object-contain mb-2" alt="Logo" />
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Finance</h1>
             <p className="text-sm text-muted-foreground uppercase tracking-[0.2em] font-medium">

@@ -16,9 +16,7 @@ export default function RegisterPage({
       <Card className="w-full max-w-md premium-card border-none bg-card">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-              <Wallet className="w-7 h-7 text-white" />
-            </div>
+            <img src="/logo.png" className="w-16 h-16 object-contain" alt="Logo" />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">Create Account</CardTitle>
           <CardDescription>

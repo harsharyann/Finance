@@ -10,9 +10,7 @@ export default function LandingPage() {
       <header className="fixed top-0 w-full z-50 glass border-b">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-white" />
-            </div>
+            <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
             <div>
               <h1 className="font-bold text-xl tracking-tight">Finance</h1>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest -mt-1 leading-none">
@@ -157,9 +155,7 @@ export default function LandingPage() {
       <footer className="py-12 border-t mt-auto">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-              <Wallet className="w-4 h-4 text-white" />
-            </div>
+            <img src="/logo.png" className="w-6 h-6 object-contain" alt="Logo" />
             <span className="font-bold text-lg">Finance</span>
           </div>
           <p className="text-sm text-muted-foreground">
