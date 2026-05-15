@@ -1,31 +1,42 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table"
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { MoreHorizontal, ArrowUpRight, ArrowDownLeft, Edit2, Trash2, Loader2 } from "lucide-react"
+import { useEffect, useState, useMemo } from "react"
+import {
+  ArrowUpRight,
+  ArrowDownLeft,
+  Trash2,
+  Loader2,
+  Search,
+  SlidersHorizontal,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
 import { format } from "date-fns"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
+const categoryColors: Record<string, string> = {
+  "Shop Stock":    "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300",
+  "Food":          "bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300",
+  "Transport":     "bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300",
+  "Electricity":   "bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300",
+  "Salary":        "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300",
+  "Rent":          "bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300",
+  "Personal":      "bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300",
+  "Miscellaneous": "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+}
+
+function getCategoryColor(cat: string) {
+  return categoryColors[cat] || "bg-primary/10 text-primary"
+}
+
 export function TransactionTable() {
   const [transactions, setTransactions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all")
   const supabase = createClient()
   const router = useRouter()
 
@@ -40,14 +51,14 @@ export function TransactionTable() {
       if (!user) return
 
       const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('user_id', user.id) // SECURITY
-        .order('date', { ascending: false })
-      
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false })
+
       if (error) throw error
       setTransactions(data || [])
-    } catch (error: any) {
+    } catch {
       toast.error("Failed to load transactions")
     } finally {
       setLoading(false)
@@ -56,99 +67,206 @@ export function TransactionTable() {
 
   async function deleteTransaction(id: string) {
     try {
-      const { error } = await (supabase.from('transactions') as any)
-        .delete()
-        .eq('id', id)
-      
+      const { error } = await (supabase.from("transactions") as any).delete().eq("id", id)
       if (error) throw error
-      
       toast.success("Transaction deleted")
-      setTransactions(transactions.filter(t => t.id !== id))
+      setTransactions((prev) => prev.filter((t) => t.id !== id))
       router.refresh()
-    } catch (error: any) {
-      toast.error("Failed to delete transaction")
+    } catch {
+      toast.error("Failed to delete")
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64 bg-white rounded-2xl border">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    )
-  }
+  const filtered = useMemo(() => {
+    return transactions.filter((t) => {
+      const matchesSearch =
+        !search ||
+        (t.note || "").toLowerCase().includes(search.toLowerCase()) ||
+        t.category.toLowerCase().includes(search.toLowerCase()) ||
+        (t.payment_method || "").toLowerCase().includes(search.toLowerCase())
+      const matchesType = filterType === "all" || t.type === filterType
+      return matchesSearch && matchesType
+    })
+  }, [transactions, search, filterType])
 
-  if (transactions.length === 0) {
-    return (
-      <div className="text-center py-20 bg-white rounded-2xl border">
-        <p className="text-muted-foreground">No transactions found. Add your first one!</p>
-      </div>
-    )
-  }
+  // Summary stats
+  const totalIncome = filtered.filter(t => t.type === "income").reduce((a, c) => a + c.amount, 0)
+  const totalExpense = filtered.filter(t => t.type === "expense").reduce((a, c) => a + c.amount, 0)
 
   return (
-    <div className="rounded-2xl border bg-white overflow-hidden shadow-sm">
-      <Table>
-        <TableHeader className="bg-slate-50">
-          <TableRow>
-            <TableHead className="font-bold">Transaction</TableHead>
-            <TableHead className="font-bold">Category</TableHead>
-            <TableHead className="font-bold">Date</TableHead>
-            <TableHead className="font-bold">Method</TableHead>
-            <TableHead className="font-bold text-right">Amount</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {transactions.map((t) => (
-            <TableRow key={t.id} className="hover:bg-slate-50/50 transition-colors">
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center",
-                    t.type === 'income' ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-600"
-                  )}>
-                    {t.type === 'income' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownLeft className="w-4 h-4" />}
-                  </div>
-                  <span className="font-bold">{t.note || t.category}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <span className="px-2 py-1 rounded-lg bg-secondary text-xs font-medium">{t.category}</span>
-              </TableCell>
-              <TableCell className="text-muted-foreground text-sm">
-                {format(new Date(t.date), 'MMM dd, yyyy')}
-              </TableCell>
-              <TableCell className="text-muted-foreground text-sm">
-                {t.payment_method || 'N/A'}
-              </TableCell>
-              <TableCell className={cn(
-                "text-right font-bold",
-                t.type === 'income' ? "text-emerald-600" : "text-foreground"
-              )}>
-                {t.type === 'income' ? "+" : "-"}₹{t.amount.toLocaleString('en-IN')}
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-xl">
-                    <DropdownMenuItem className="gap-2">
-                      <Edit2 className="w-4 h-4" /> Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 text-destructive" onClick={() => deleteTransaction(t.id)}>
-                      <Trash2 className="w-4 h-4" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
+    <div className="space-y-5">
+
+      {/* === SEARCH + FILTER BAR === */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by note, category or method..."
+            className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+          />
+        </div>
+
+        {/* Type filter pills */}
+        <div className="flex items-center gap-1.5 bg-muted rounded-xl p-1">
+          {(["all", "income", "expense"] as const).map((type) => (
+            <button
+              key={type}
+              onClick={() => setFilterType(type)}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-150 capitalize",
+                filterType === type
+                  ? "bg-card text-foreground shadow-sm border border-border"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {type}
+            </button>
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      </div>
+
+      {/* === MINI SUMMARY ROW === */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border border-l-4 border-l-emerald-500">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center flex-shrink-0">
+            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Income</p>
+            <p className="text-base font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+              +₹{totalIncome.toLocaleString("en-IN")}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border border-l-4 border-l-rose-500">
+          <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950 flex items-center justify-center flex-shrink-0">
+            <TrendingDown className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Expenses</p>
+            <p className="text-base font-black text-rose-600 dark:text-rose-400 tabular-nums">
+              -₹{totalExpense.toLocaleString("en-IN")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* === TABLE / LIST === */}
+      {loading ? (
+        <div className="flex justify-center items-center h-52 bg-card border border-border rounded-2xl">
+          <Loader2 className="w-7 h-7 animate-spin text-primary" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-52 bg-card border border-border rounded-2xl gap-3">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+            <Search className="w-5 h-5 text-muted-foreground" />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-foreground">No transactions found</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {search ? "Try a different search term" : "Add your first transaction!"}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+          {/* Table Header */}
+          <div className="grid grid-cols-[1fr_120px_100px_100px_110px_44px] gap-0 px-4 py-3 bg-muted/50 border-b border-border">
+            {["Transaction", "Category", "Date", "Method", "Amount", ""].map((h, i) => (
+              <p key={i} className={cn(
+                "text-[11px] font-black uppercase tracking-wider text-muted-foreground",
+                i === 4 ? "text-right" : ""
+              )}>{h}</p>
+            ))}
+          </div>
+
+          {/* Rows */}
+          <div className="divide-y divide-border">
+            {filtered.map((t, idx) => (
+              <div
+                key={t.id}
+                className="grid grid-cols-[1fr_120px_100px_100px_110px_44px] gap-0 px-4 py-3.5 items-center hover:bg-muted/30 transition-colors duration-100 animate-in-fade"
+                style={{ animationDelay: `${idx * 20}ms` }}
+              >
+                {/* Transaction name + icon */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0",
+                    t.type === "income"
+                      ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400"
+                      : "bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400"
+                  )}>
+                    {t.type === "income"
+                      ? <ArrowUpRight className="w-4 h-4" />
+                      : <ArrowDownLeft className="w-4 h-4" />
+                    }
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate leading-none">
+                      {t.note || t.category}
+                    </p>
+                    {t.note && (
+                      <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{t.category}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Category chip */}
+                <div>
+                  <span className={cn(
+                    "inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold",
+                    getCategoryColor(t.category)
+                  )}>
+                    {t.category}
+                  </span>
+                </div>
+
+                {/* Date */}
+                <p className="text-sm text-muted-foreground font-medium">
+                  {format(new Date(t.date), "dd MMM")}
+                </p>
+
+                {/* Method */}
+                <p className="text-sm text-muted-foreground font-medium truncate">
+                  {t.payment_method || "—"}
+                </p>
+
+                {/* Amount */}
+                <p className={cn(
+                  "text-sm font-black text-right tabular-nums",
+                  t.type === "income"
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-rose-600 dark:text-rose-400"
+                )}>
+                  {t.type === "income" ? "+" : "−"}₹{t.amount.toLocaleString("en-IN")}
+                </p>
+
+                {/* Delete */}
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => deleteTransaction(t.id)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-rose-50 dark:hover:bg-rose-950 hover:text-rose-500 transition-colors"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer count */}
+          <div className="px-4 py-3 border-t border-border bg-muted/30">
+            <p className="text-xs text-muted-foreground font-medium">
+              Showing <span className="text-foreground font-bold">{filtered.length}</span> of <span className="text-foreground font-bold">{transactions.length}</span> transactions
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
