@@ -65,7 +65,7 @@ export function AddTransactionModal({ children }: { children?: React.ReactNode }
     resolver: zodResolver(formSchema),
     defaultValues: {
       type: "expense",
-      date: new Date().toISOString().split('T')[0],
+      date: format(new Date(), 'yyyy-MM-dd'),
       amount: "",
       category: "",
       payment_method: "Cash",

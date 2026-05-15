@@ -50,12 +50,17 @@ export function DashboardStats() {
         fromDate = todayStr
       }
 
-      const { data, error: fetchError } = await (supabase
-        .from("transactions") as any)
+      let query = (supabase.from("transactions") as any)
         .select("amount, type")
         .eq("user_id", user.id)
-        .gte("date", fromDate)
-        .lte("date", toDate)
+
+      if (view === "daily") {
+        query = query.eq("date", todayStr)
+      } else {
+        query = query.gte("date", fromDate)
+      }
+
+      const { data, error: fetchError } = await query
 
       if (fetchError) {
         console.error("DashboardStats fetch error:", fetchError)
