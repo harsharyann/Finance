@@ -67,8 +67,7 @@ export default function BillsPage() {
       if (billError) throw billError
 
       // 2. Automatically add to transactions
-      const { error: txError } = await supabase
-        .from('transactions')
+      const { error: txError } = await (supabase.from('transactions') as any)
         .insert({
           user_id: bill.user_id,
           amount: bill.amount,
