@@ -103,7 +103,7 @@ export function AddBillModal({ children }: { children?: React.ReactNode }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          children || (
+          (children as any) || (
             <Button className="rounded-xl gap-2 font-bold shadow-md hover:shadow-lg transition-all">
               <Plus className="w-4 h-4" />
               Add Bill
