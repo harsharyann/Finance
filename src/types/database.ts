@@ -64,6 +64,38 @@ export interface Database {
           created_at?: string
         }
       }
+      bills: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          amount: number
+          category: string
+          due_date: string
+          status: 'upcoming' | 'paid' | 'due'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          amount: number
+          category: string
+          due_date: string
+          status?: 'upcoming' | 'paid' | 'due'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          amount?: number
+          category?: string
+          due_date?: string
+          status?: 'upcoming' | 'paid' | 'due'
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
