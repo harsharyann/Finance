@@ -39,8 +39,23 @@ const navItems = [
 ]
 
 function NavLinks() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const [role, setRole] = useState<string | null>(null)
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function getRole() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        if (data) setRole(data.role)
+      }
+    }
+    getRole()
+  }, [])
 
   function isActive(href: string) {
     const [path, query] = href.split("?")
@@ -102,7 +117,32 @@ function NavLinks() {
             })}
           </div>
         </div>
-      ))}
+      {/* GHOST ADMIN SECTION */}
+      {role === 'admin' && (
+        <div className="pt-2">
+          <h3 className="px-3 text-xs font-black uppercase tracking-[0.2em] text-primary/60 mb-3 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            Master Control
+          </h3>
+          <div className="space-y-1">
+            <Link
+              href="/admin"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group border border-dashed border-primary/20",
+                pathname === "/admin"
+                  ? "bg-primary/10 text-primary border-primary/50"
+                  : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+              )}
+            >
+              <TrendingUp className="w-5 h-5 text-primary" />
+              <div className="flex flex-col">
+                <span className="text-sm font-bold leading-none">Admin Panel</span>
+                <span className="text-[10px] font-medium mt-1 text-primary/50">Manage Users</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

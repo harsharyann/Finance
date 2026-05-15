@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { AdminShortcut } from "@/components/layout/AdminShortcut";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         <ThemeProvider>
           {children}
+          <AdminShortcut />
           <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>

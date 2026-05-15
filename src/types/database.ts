@@ -15,18 +15,24 @@ export interface Database {
           name: string | null
           email: string | null
           created_at: string
+          role: 'user' | 'admin'
+          is_locked: boolean
         }
         Insert: {
           id: string
           name?: string | null
           email?: string | null
           created_at?: string
+          role?: 'user' | 'admin'
+          is_locked?: boolean
         }
         Update: {
           id?: string
           name?: string | null
           email?: string | null
           created_at?: string
+          role?: 'user' | 'admin'
+          is_locked?: boolean
         }
       }
       transactions: {
