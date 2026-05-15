@@ -122,7 +122,7 @@ function DebtContent() {
             <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 group-hover:scale-105 transition-transform" />
             <div className="relative flex items-center gap-2">
               <Plus className="w-6 h-6" />
-              Naya Record
+              New Record
             </div>
           </Button>
         </AddDebtModal>
