@@ -161,7 +161,7 @@ export function Sidebar() {
   }, [])
 
   return (
-    <div className="flex flex-col h-full bg-card border-r border-border/60">
+    <div className="hidden md:flex flex-col h-full bg-card border-r border-border/60 w-72 shrink-0">
       {/* LOGO */}
       <div className="p-6">
         <Link href="/dashboard" className="flex items-center gap-3 group">
